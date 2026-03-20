@@ -1,3 +1,102 @@
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
+
+// --- Order System ---
+const orderSchema = new mongoose.Schema({
+  customerName: { type: String, required: true },
+  customerPhone: { type: String, required: true },
+  items: [
+    {
+      itemId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true },
+      name: { type: String, required: true },
+      quantity: { type: Number, required: true, min: 1 },
+      price: { type: Number, required: true, min: 0 }
+    }
+  ],
+  totalAmount: { type: Number, required: true, min: 0 },
+  invoicePath: { type: String },
+  createdAt: { type: Date, default: Date.now }
+});
+const Order = mongoose.model("Order", orderSchema);
+
+// Helper: Generate PDF invoice
+async function generateInvoice(order) {
+  const doc = new PDFDocument();
+  const invoiceDir = path.join(__dirname, 'invoices');
+  if (!fs.existsSync(invoiceDir)) fs.mkdirSync(invoiceDir);
+  const filePath = path.join(invoiceDir, `invoice_${order._id}.pdf`);
+  doc.pipe(fs.createWriteStream(filePath));
+  doc.fontSize(18).text('Invoice', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(12).text(`Customer: ${order.customerName}`);
+  doc.text(`Phone: ${order.customerPhone}`);
+  doc.text(`Date: ${order.createdAt.toLocaleString()}`);
+  doc.moveDown();
+  doc.text('Items:');
+  doc.moveDown();
+  let total = 0;
+  order.items.forEach(item => {
+    doc.text(`${item.name} - Qty: ${item.quantity} - Price: ₹${item.price}`);
+    total += item.quantity * item.price;
+  });
+  doc.moveDown();
+  doc.text(`Total Amount: ₹${total}`);
+  doc.end();
+  return filePath;
+}
+
+// POST /order: automatic stock deduction, PDF invoice
+app.post("/order", async (req, res) => {
+  try {
+    const { customerName, customerPhone, items } = req.body;
+    if (!customerName || !customerPhone || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: "Missing customer info or items" });
+    }
+    let totalAmount = 0;
+    // Check stock and deduct
+    for (const item of items) {
+      const inv = await Inventory.findById(item.itemId);
+      if (!inv) return res.status(400).json({ success: false, message: `Item not found: ${item.name}` });
+      if (item.quantity > inv.stockQuantity) {
+        return res.status(400).json({ success: false, message: `Insufficient stock for ${item.name}` });
+      }
+    }
+    // Deduct stock
+    for (const item of items) {
+      const inv = await Inventory.findById(item.itemId);
+      inv.stockQuantity -= item.quantity;
+      await updateLowStock(inv);
+      await logStockMovement(inv._id, "out", item.quantity, "order");
+      await inv.save();
+      totalAmount += item.quantity * item.price;
+    }
+    // Save order
+    const order = await Order.create({ customerName, customerPhone, items, totalAmount });
+    // Generate PDF
+    const invoicePath = await generateInvoice(order);
+    order.invoicePath = invoicePath;
+    await order.save();
+    return res.status(201).json({ success: true, data: order });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to create order", error: error.message });
+  }
+});
+
+// GET /invoice/:id: return/download PDF
+app.get("/invoice/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order || !order.invoicePath) {
+      return res.status(404).json({ success: false, message: "Invoice not found" });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=invoice_${order._id}.pdf`);
+    fs.createReadStream(order.invoicePath).pipe(res);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to fetch invoice", error: error.message });
+  }
+});
 // --- Stock Movement Tracking ---
 const stockMovementSchema = new mongoose.Schema({
   itemId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true },
@@ -875,6 +974,22 @@ async function startServer() {
 startServer();
 
 /*
+// --- Order & Invoice API Sample Usage ---
+
+// POST /order
+// {
+//   "customerName": "John Doe",
+//   "customerPhone": "9876543210",
+//   "items": [
+//     { "itemId": "<itemId>", "name": "Oil Filter", "quantity": 2, "price": 500 }
+//   ]
+// }
+// Response: { "success": true, "data": { ... } }
+
+// GET /invoice/:id
+// Response: PDF file download
+
+// --- End Order & Invoice API Sample Usage ---
 // --- Stock Movement API Sample Usage ---
 
 // POST /inventory/:id/add
