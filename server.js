@@ -1,3 +1,34 @@
+// --- Machine Health Tracking ---
+// Helper: get machine health
+async function getMachineHealth(machineId) {
+  // Count services
+  const serviceCount = await Service.countDocuments({ machineId });
+  // Parts replaced (from SparePart, type: 'ordered', for this machine)
+  const partsReplaced = await SparePart.countDocuments({ machineId, type: 'ordered' });
+  // Last service date
+  const lastService = await Service.findOne({ machineId }).sort({ date: -1 });
+  // Health score: 100 - (serviceCount * 10 + partsReplaced * 5)
+  let healthScore = 100 - (serviceCount * 10 + partsReplaced * 5);
+  if (healthScore < 0) healthScore = 0;
+  return {
+    healthScore,
+    issueCount: serviceCount + partsReplaced,
+    lastServiceDate: lastService ? lastService.date : null
+  };
+}
+
+// API: GET /machine/health/:id
+app.get('/machine/health/:id', async (req, res) => {
+  try {
+    const machineId = req.params.id;
+    const machine = await Machine.findById(machineId);
+    if (!machine) return res.status(404).json({ success: false, message: 'Machine not found' });
+    const health = await getMachineHealth(machineId);
+    return res.status(200).json({ success: true, machineId, health });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to fetch machine health', error: error.message });
+  }
+});
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'your_secret_key'; // Change for production
 
@@ -1040,6 +1071,21 @@ async function startServer() {
 startServer();
 
 /*
+// --- Machine Health API Sample Usage ---
+
+// GET /machine/health/:id
+// Response:
+// {
+//   "success": true,
+//   "machineId": "...",
+//   "health": {
+//     "healthScore": 80,
+//     "issueCount": 3,
+//     "lastServiceDate": "2026-03-10T00:00:00Z"
+//   }
+// }
+
+// --- End Machine Health API Sample Usage ---
 // --- Role-Based Auth API Sample Usage ---
 
 // POST /login
