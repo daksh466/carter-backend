@@ -1,3 +1,71 @@
+// --- Stock Movement Tracking ---
+const stockMovementSchema = new mongoose.Schema({
+  itemId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true },
+  type: { type: String, enum: ["in", "out"], required: true },
+  quantity: { type: Number, required: true, min: 0 },
+  date: { type: Date, default: Date.now },
+  reference: { type: String, trim: true }
+});
+const StockMovement = mongoose.model("StockMovement", stockMovementSchema);
+
+// Helper: log stock movement
+async function logStockMovement(itemId, type, quantity, reference) {
+  await StockMovement.create({ itemId, type, quantity, reference });
+}
+
+// Update POST /inventory/:id/consume to log movement
+app.post("/inventory/:id/consume", async (req, res) => {
+  try {
+    const { quantityUsed, reference } = req.body;
+    if (quantityUsed === undefined || quantityUsed < 0) {
+      return res.status(400).json({ success: false, message: "Invalid quantityUsed" });
+    }
+    const item = await Inventory.findById(req.params.id);
+    if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+    item.stockQuantity -= quantityUsed;
+    item.consumptionHistory.push({ date: new Date(), quantityUsed });
+    await updateLowStock(item);
+    await logStockMovement(item._id, "out", quantityUsed, reference || "manual");
+    return res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to track consumption", error: error.message });
+  }
+});
+
+// Add stock-in API
+app.post("/inventory/:id/add", async (req, res) => {
+  try {
+    const { quantity, reference } = req.body;
+    if (quantity === undefined || quantity < 0) {
+      return res.status(400).json({ success: false, message: "Invalid quantity" });
+    }
+    const item = await Inventory.findById(req.params.id);
+    if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+    item.stockQuantity += quantity;
+    await updateLowStock(item);
+    await logStockMovement(item._id, "in", quantity, reference || "manual");
+    return res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to add stock", error: error.message });
+  }
+});
+
+// Movement history API with date filter
+app.get("/inventory/history/:itemId", async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    const filter = { itemId: req.params.itemId };
+    if (start || end) {
+      filter.date = {};
+      if (start) filter.date.$gte = new Date(start);
+      if (end) filter.date.$lte = new Date(end);
+    }
+    const history = await StockMovement.find(filter).sort({ date: -1 });
+    return res.status(200).json({ success: true, history });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to fetch movement history", error: error.message });
+  }
+});
 // --- Inventory Intelligence ---
 const inventorySchema = new mongoose.Schema({
   itemName: { type: String, required: true, trim: true },
@@ -807,6 +875,20 @@ async function startServer() {
 startServer();
 
 /*
+// --- Stock Movement API Sample Usage ---
+
+// POST /inventory/:id/add
+// { "quantity": 5, "reference": "order123" }
+// Response: { "success": true, "data": { ... } }
+
+// POST /inventory/:id/consume
+// { "quantityUsed": 2, "reference": "manual" }
+// Response: { "success": true, "data": { ... } }
+
+// GET /inventory/history/:itemId?start=2026-03-01&end=2026-03-20
+// Response: { "success": true, "history": [ { "type": "in", "quantity": 5, "date": "...", "reference": "order123" }, { "type": "out", "quantity": 2, "date": "...", "reference": "manual" } ] }
+
+// --- End Stock Movement API Sample Usage ---
 // --- Inventory API Sample Usage ---
 
 // POST /inventory
