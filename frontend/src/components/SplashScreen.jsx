@@ -68,11 +68,11 @@ const SplashScreen = ({ onFinish }) => {
     const logoTimer = setTimeout(() => {
       setLogoIn(true);
       setGlow(1.1);
-    }, 1800);
+    }, 1000);
     const exitTimer = setTimeout(() => {
       setShow(false);
       if (onFinish) onFinish();
-    }, 4200);
+    }, 2000);
     return () => {
       clearTimeout(logoTimer);
       clearTimeout(exitTimer);
@@ -144,17 +144,20 @@ const SplashScreen = ({ onFinish }) => {
           </div>
           <motion.div
             className="relative z-10 flex flex-col items-center"
-            initial={{ opacity: 0, scale: 0.8, y: 30, filter: "blur(4px)" }}
+            initial={{ opacity: 0, scale: 0.5, y: 150, rotate: -10, filter: "blur(10px)" }}
             animate={
               logoIn
                 ? {
                     opacity: 1,
-                    scale: 1,
+                    scale: 1.1,
                     y: 0,
+                    rotate: 0,
                     filter: "blur(0px)",
                     transition: {
-                      duration: 1.1,
-                      ease: [0.4, 0, 0.2, 1],
+                      type: "spring",
+                      duration: 0.8,
+                      bounce: 0.4,
+                      ease: "easeOut",
                     },
                   }
                 : {}
@@ -177,18 +180,18 @@ const SplashScreen = ({ onFinish }) => {
               transition={{ duration: 1.1, ease: "easeInOut" }}
             />
             <svg width="120" height="120" viewBox="0 0 80 80" fill="none">
-              <rect width="80" height="80" rx="16" fill="#1A2E1A" />
+              <rect width="80" height="80" rx="16" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
               <text
                 x="50%"
                 y="50%"
                 textAnchor="middle"
                 dy=".35em"
-                fontSize="32"
-                fill="#fff"
+                fontSize="42"
+                fill="#000000"
                 fontWeight="bold"
                 fontFamily="sans-serif"
               >
-                Carter++
+                Carter A++
               </text>
             </svg>
           </motion.div>

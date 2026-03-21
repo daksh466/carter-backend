@@ -1,4 +1,4 @@
-
+// File deleted - moved to frontend/src/components/SplashScreen.jsx
 import React, { useRef, useEffect, useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
