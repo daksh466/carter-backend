@@ -8,7 +8,7 @@ const connectionSchema = new mongoose.Schema({
   email: { type: String, trim: true },
   category: { type: String, enum: ['customer', 'supplier', 'neighbour'], required: true },
   state: { type: String, trim: true },
-  companyCode: { type: String, trim: true },
+  companyCode: { type: String, trim: true, unique: true, index: true },
   feedback: { type: Number, min: 1, max: 5 },
   commodity: { type: String, trim: true },
   machineModel: { type: String, trim: true },

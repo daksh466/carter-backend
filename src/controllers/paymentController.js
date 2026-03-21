@@ -1,21 +1,26 @@
 const Payment = require('../models/Payment');
+const Joi = require('joi');
+const { AppError } = require('../middlewares/errorHandler');
+
+const updatePaymentSchema = Joi.object({
+  amount: Joi.number().min(0).required(),
+  paymentDate: Joi.date().required(),
+  paymentBy: Joi.string().valid('cash', 'online', 'dealer').required(),
+  supervisedBy: Joi.string().required()
+});
 
 exports.updatePayment = async (req, res, next) => {
+  // Joi validation
+  const { error } = updatePaymentSchema.validate(req.body);
+  if (error) throw new AppError(`Validation error: ${error.details[0].message}`, 400);
   try {
     const { amount, paymentDate, paymentBy, supervisedBy } = req.body;
-    const allowedPaymentBy = ['cash', 'online', 'dealer'];
-    if (paymentBy && !allowedPaymentBy.includes(paymentBy)) {
-      return res.status(400).json({ success: false, message: `Invalid paymentBy. Allowed values are ${allowedPaymentBy.join(', ')}` });
-    }
-    if (amount !== undefined && amount < 0) {
-      return res.status(400).json({ success: false, message: 'Amount cannot be negative' });
-    }
     const payment = await Payment.findByIdAndUpdate(
       req.params.id,
       { amount, paymentDate, paymentBy, supervisedBy },
       { new: true, runValidators: true }
     );
-    if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
+    if (!payment) throw new AppError('Payment not found', 404);
     res.json({ success: true, data: payment });
   } catch (err) {
     next(err);
@@ -23,9 +28,12 @@ exports.updatePayment = async (req, res, next) => {
 };
 
 exports.deletePayment = async (req, res, next) => {
+  if (!/^[a-fA-F0-9]{24}$/.test(req.params.id)) {
+    throw new AppError('Invalid payment ID format', 400);
+  }
   try {
     const payment = await Payment.findByIdAndDelete(req.params.id);
-    if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
+    if (!payment) throw new AppError('Payment not found', 404);
     res.json({ success: true, data: payment });
   } catch (err) {
     next(err);

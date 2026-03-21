@@ -1,88 +1,45 @@
 const winston = require('winston');
-const { format } = winston;
+const fs = require('fs');
 const path = require('path');
 
-// Ensure logs directory exists (create_file auto-handles dirs, but explicit)
+// Ensure logs directory exists
 const logDir = path.join(__dirname, '..', 'logs');
-const errorLogFile = path.join(logDir, 'error.log');
-const combinedLogFile = path.join(logDir, 'combined.log');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
 
-// Custom format
-const customFormat = format.printf(({ timestamp, level, message, meta }) => {
-  return `${timestamp} [${level.toUpperCase()}]: ${message} ${meta ? JSON.stringify(meta) : ''}`;
+const logFormat = winston.format.printf(({ timestamp, level, message }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${message}`;
 });
 
-// Transports
-const transports = [
-  new winston.transports.Console({
-    format: format.combine(
-      format.colorize(),
-      format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-      format.errors({ stack: true }),
-      customFormat
-    )
-  }),
-  new winston.transports.File({
-    filename: errorLogFile,
-    level: 'error',
-    format: format.combine(
-      format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-      format.errors({ stack: true }),
-      format.json()
-    )
-  }),
-  new winston.transports.File({
-    filename: combinedLogFile,
-    format: format.combine(
-      format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-      format.errors({ stack: true }),
-      format.json()
-    )
-  })
-];
-
-// Logger instance
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
-  format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.errors({ stack: true }),
-    format.splat(),
-    format.json()
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    logFormat
   ),
-  defaultMeta: { service: 'carter-crm-backend' },
-  transports
+  transports: [
+    new winston.transports.File({ filename: path.join(logDir, 'error.log'), level: 'error' }),
+    new winston.transports.File({ filename: path.join(logDir, 'combined.log') }),
+    new winston.transports.Console()
+  ]
 });
 
-// HTTP request logger middleware (replaces morgan)
-const httpLogger = format.printf(({ timestamp, level, message, req, res }) => {
-  const { method, url, httpVersion } = req;
-  const { statusCode } = res;
-  const contentLength = res.get('content-length');
-  const userId = req.user?.id || 'anonymous';
-  const responseTime = res.responseTime || 'N/A';
-
-  return `${timestamp} [${level.toUpperCase()}] HTTP ${method} ${url} ${statusCode} ${contentLength} ${responseTime}ms user:${userId}`;
+// Morgan-like HTTP logger middleware
+const morgan = require('morgan');
+const httpLogger = morgan(function (tokens, req, res) {
+  return [
+    tokens.date(req, res, 'iso'),
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ');
+}, {
+  stream: {
+    write: (message) => logger.info(message.trim())
+  }
 });
 
-const httpMiddleware = (req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const responseTime = Date.now() - start;
-    res.responseTime = responseTime;
-    logger.http(`HTTP ${req.method} ${req.route?.path || req.path} - ${res.statusCode} - ${responseTime}ms`, {
-      method: req.method,
-      url: req.originalUrl,
-      status: res.statusCode,
-      userId: req.user?.id || 'anonymous',
-      responseTime
-    });
-  });
-  next();
-};
-
-module.exports = {
-  logger,
-  httpLogger: httpMiddleware
-};
+module.exports = { logger, httpLogger };
 

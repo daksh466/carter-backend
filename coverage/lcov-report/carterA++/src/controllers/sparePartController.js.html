@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">15.78% </span>
+                <span class="strong">27.27% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/19</span>
+                <span class='fraction'>6/22</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">17.64% </span>
+                <span class="strong">31.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/17</span>
+                <span class='fraction'>6/19</span>
             </div>
         
             
@@ -93,17 +93,29 @@
 <a name='L28'></a><a href='#L28'>28</a>
 <a name='L29'></a><a href='#L29'>29</a>
 <a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -114,7 +126,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -124,20 +136,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const SparePart = require('../models/SparePart');
+const Joi = require('joi');
+const { AppError } = require('../middlewares/errorHandler');
+&nbsp;
+const updateSparePartSchema = Joi.object({
+  partName: Joi.string().required(),
+  type: Joi.string().valid('ordered', 'required').required()
+});
 &nbsp;
 exports.updateSparePart = <span class="fstat-no" title="function not covered" >as</span>ync (req, res, next) =&gt; {
+  // Joi validation
+  const { error } = <span class="cstat-no" title="statement not covered" >updateSparePartSchema.validate(req.body);</span>
+<span class="cstat-no" title="statement not covered" >  if (error) <span class="cstat-no" title="statement not covered" >throw new AppError(`Validation error: ${error.details[0].message}`, 400);</span></span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const { partName, type } = <span class="cstat-no" title="statement not covered" >req.body;</span>
-    const allowedSpareType = <span class="cstat-no" title="statement not covered" >['ordered', 'required'];</span>
-<span class="cstat-no" title="statement not covered" >    if (type &amp;&amp; !allowedSpareType.includes(type)) {</span>
-<span class="cstat-no" title="statement not covered" >      return res.status(400).json({ success: false, message: `Invalid type. Allowed values are ${allowedSpareType.join(', ')}` });</span>
-    }
     const spare = <span class="cstat-no" title="statement not covered" >await SparePart.findByIdAndUpdate(</span>
       req.params.id,
       { partName, type },
       { new: true, runValidators: true }
     );
-<span class="cstat-no" title="statement not covered" >    if (!spare) <span class="cstat-no" title="statement not covered" >return res.status(404).json({ success: false, message: 'Spare part not found' });</span></span>
+<span class="cstat-no" title="statement not covered" >    if (!spare) <span class="cstat-no" title="statement not covered" >throw new AppError('Spare part not found', 404);</span></span>
 <span class="cstat-no" title="statement not covered" >    res.json({ success: true, data: spare });</span>
   } catch (err) {
 <span class="cstat-no" title="statement not covered" >    next(err);</span>
@@ -147,7 +165,7 @@ exports.updateSparePart = <span class="fstat-no" title="function not covered" >a
 exports.deleteSparePart = <span class="fstat-no" title="function not covered" >as</span>ync (req, res, next) =&gt; {
 <span class="cstat-no" title="statement not covered" >  try {</span>
     const spare = <span class="cstat-no" title="statement not covered" >await SparePart.findByIdAndDelete(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >    if (!spare) <span class="cstat-no" title="statement not covered" >return res.status(404).json({ success: false, message: 'Spare part not found' });</span></span>
+<span class="cstat-no" title="statement not covered" >    if (!spare) <span class="cstat-no" title="statement not covered" >throw new AppError('Spare part not found', 404);</span></span>
 <span class="cstat-no" title="statement not covered" >    res.json({ success: true, data: spare });</span>
   } catch (err) {
 <span class="cstat-no" title="statement not covered" >    next(err);</span>
@@ -160,7 +178,7 @@ exports.deleteSparePart = <span class="fstat-no" title="function not covered" >a
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-20T18:43:04.038Z
+                at 2026-03-21T04:15:37.924Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

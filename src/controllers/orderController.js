@@ -3,8 +3,23 @@ const Inventory = require('../models/Inventory');
 const mongoose = require('mongoose');
 const { createInvoicePDF } = require('../services/pdfService');
 const { AppError } = require('../middlewares/errorHandler');
+const Joi = require('joi');
+
+// Joi validation schemas
+const createOrderSchema = Joi.object({
+  itemCode: Joi.string().required(),
+  quantity: Joi.number().integer().min(1).required()
+});
+
+function isValidObjectId(id) {
+  return /^[a-fA-F0-9]{24}$/.test(id);
+}
 
 exports.createOrder = async (req, res, next) => {
+  // Joi validation
+  const { error } = createOrderSchema.validate(req.body);
+  if (error) throw new AppError(`Validation error: ${error.details[0].message}`, 400);
+  
   // Skip transactions in test mode (MongoDB standalone doesn't support transactions)
   const useTransaction = process.env.NODE_ENV !== 'test';
   
@@ -16,17 +31,6 @@ exports.createOrder = async (req, res, next) => {
   
   try {
     const { itemCode, quantity } = req.body;
-    
-    // Validate input
-    if (!itemCode || !quantity) {
-      if (useTransaction) await session.abortTransaction();
-      throw new AppError('Missing required fields', 400);
-    }
-    
-    if (typeof quantity !== 'number' || quantity <= 0) {
-      if (useTransaction) await session.abortTransaction();
-      throw new AppError('Quantity must be a positive number', 400);
-    }
     
     const inventory = await Inventory.findOne({ itemCode }).session(session);
     if (!inventory || inventory.stock < quantity) {
@@ -70,4 +74,3 @@ exports.listOrders = async (req, res, next) => {
     next(err);
   }
 };
-

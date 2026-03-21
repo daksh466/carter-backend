@@ -3,22 +3,27 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { jwtSecret } = require('../config');
 const { AppError } = require('../middlewares/errorHandler');
+const Joi = require('joi');
+
+// Joi validation schemas
+const registerSchema = Joi.object({
+  username: Joi.string().trim().min(3).max(50).required(),
+  password: Joi.string().trim().min(8).max(100).required(),
+  businessName: Joi.string().trim().min(2).max(100).required(),
+  phone: Joi.string().trim().min(10).max(15).required()
+});
+
+const loginSchema = Joi.object({
+  username: Joi.string().trim().required(),
+  password: Joi.string().trim().required()
+});
 
 exports.register = async (req, res, next) => {
+  // Joi validation
+  const { error } = registerSchema.validate(req.body);
+  if (error) throw new AppError(`Validation error: ${error.details[0].message}`, 400);
   try {
     const { username, password, businessName, phone } = req.body;
-    if (!username || typeof username !== 'string' || username.trim() === '') {
-      throw new AppError('Username is required', 400);
-    }
-    if (!password || typeof password !== 'string' || password.trim() === '') {
-      throw new AppError('Password is required', 400);
-    }
-    if (!businessName || typeof businessName !== 'string' || businessName.trim() === '') {
-      throw new AppError('Business name is required', 400);
-    }
-    if (!phone || typeof phone !== 'string' || phone.trim() === '') {
-      throw new AppError('Phone is required', 400);
-    }
     const user = new User({ username, password, businessName, phone });
     await user.save();
     res.json({ success: true, message: 'User registered', user });
@@ -28,14 +33,11 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
+  // Joi validation
+  const { error } = loginSchema.validate(req.body);
+  if (error) throw new AppError(`Validation error: ${error.details[0].message}`, 400);
   try {
     const { username, password } = req.body;
-    if (!username || typeof username !== 'string' || username.trim() === '') {
-      throw new AppError('Username is required', 400);
-    }
-    if (!password || typeof password !== 'string' || password.trim() === '') {
-      throw new AppError('Password is required', 400);
-    }
     const user = await User.findOne({ username });
     if (!user) throw new AppError('Invalid credentials', 401);
     const valid = await bcrypt.compare(password, user.password);
