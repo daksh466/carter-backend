@@ -1,14 +1,29 @@
 import axios from "axios";
 
-const resolveBaseUrl = () => {
-  const configured = String(import.meta.env?.VITE_API_URL || "").trim();
-  if (!configured) {
+const ensureApiPath = (rawValue) => {
+  const raw = String(rawValue || "").trim();
+  if (!raw) {
     return "http://localhost:5000/api";
   }
-  if (/^https?:\/\//i.test(configured)) {
-    return configured;
+
+  if (!/^https?:\/\//i.test(raw)) {
+    if (raw === "/api" || raw === "/api/") return "/api";
+    return raw.endsWith("/") ? raw.slice(0, -1) : raw;
   }
-  return configured;
+
+  try {
+    const parsed = new URL(raw);
+    const normalizedPath = parsed.pathname.replace(/\/+$/, "");
+    parsed.pathname = normalizedPath.toLowerCase().endsWith("/api") ? normalizedPath : `${normalizedPath || ""}/api`;
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+  }
+};
+
+const resolveBaseUrl = () => {
+  const configured = String(import.meta.env?.VITE_API_URL || "").trim();
+  return ensureApiPath(configured);
 };
 
 const api = axios.create({

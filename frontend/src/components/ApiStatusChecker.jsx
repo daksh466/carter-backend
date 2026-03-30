@@ -13,7 +13,19 @@ const normalizeApiBase = (value) => {
     return fallback;
   }
 
-  return raw;
+  if (!/^https?:\/\//i.test(raw)) {
+    if (raw === '/api' || raw === '/api/') return '/api';
+    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }
+
+  try {
+    const parsed = new URL(raw);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    parsed.pathname = path.toLowerCase().endsWith('/api') ? path : `${path || ''}/api`;
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }
 };
 
 const API = normalizeApiBase(import.meta.env.VITE_API_URL);
