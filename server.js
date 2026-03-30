@@ -20,6 +20,10 @@ const sparePartRoutes = require('./src/routes/sparePartRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
 const connectionRoutes = require('./src/routes/connectionRoutes');
 const healthRoutes = require('./src/routes/healthRoutes');
+const legacyStoreRoutes = require('./backend/src/routes/storeRoutes');
+const legacyTransferRoutes = require('./backend/src/routes/transferRoutes');
+const legacyPurchaseOrdersRoutes = require('./backend/src/routes/purchaseOrdersRoutes');
+const Inventory = require('./src/models/Inventory');
 const connectDB = require('./config/db');
 const fs = require('fs');
 const path = require('path');
@@ -67,6 +71,29 @@ app.use('/api/users/login', authLimiter);
 app.use('/api/users/register', authLimiter);
 app.use(generalLimiter);
 
+// API discovery endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API found',
+    data: {
+      health: '/api/health',
+      test: '/api/test'
+    }
+  });
+});
+
+app.get(['/api', '/api/'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API found',
+    data: {
+      health: '/api/health',
+      test: '/api/test'
+    }
+  });
+});
+
 
 
 // Register all routes
@@ -79,6 +106,44 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/spareparts', sparePartRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/connections', connectionRoutes);
+app.use('/api/stores', legacyStoreRoutes);
+app.use('/api/transfers', legacyTransferRoutes);
+app.use('/api/purchase-orders', legacyPurchaseOrdersRoutes);
+app.use('/api/purchases', legacyPurchaseOrdersRoutes);
+
+// Compatibility endpoint used by frontend dashboards.
+app.get('/api/orders-list', async (req, res, next) => {
+  try {
+    const Order = require('./src/models/Order');
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    return res.json({
+      success: true,
+      data: {
+        orders,
+        summary: { total: orders.length }
+      }
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Compatibility endpoint used by frontend alerts widget.
+app.get('/api/alerts', async (req, res, next) => {
+  try {
+    const alerts = await Inventory.find({ stock: { $lt: 10 } }).sort({ updatedAt: -1 }).limit(100);
+    return res.json({
+      success: true,
+      data: {
+        alerts,
+        summary: { total: alerts.length }
+      }
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     message: 'API + DB Connected Successfully'

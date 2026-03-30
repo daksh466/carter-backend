@@ -267,6 +267,28 @@ app.use((req, res, next) => {
 });
 
 // Health endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API found',
+    data: {
+      health: '/api/health',
+      test: '/api/test'
+    }
+  });
+});
+
+app.get(['/api', '/api/'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API found',
+    data: {
+      health: '/api/health',
+      test: '/api/test'
+    }
+  });
+});
+
 app.get('/api/test', (req, res) => {
   res.json({ success: true, message: 'API connection successful!' });
 });
