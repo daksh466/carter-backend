@@ -11,7 +11,7 @@ const ApiStatusChecker = () => {
     setError(null);
     setData(null);
     try {
-      const res = await api.get("/machines");
+      const res = await api.get("/api/machines");
       if (!res?.data) {
         setStatus("fail");
         setError("Empty response from backend");
