@@ -22,6 +22,7 @@ const connectionRoutes = require('./src/routes/connectionRoutes');
 const healthRoutes = require('./backend/src/routes/healthRoutes');
 const alertRoutes = require('./backend/src/routes/alertRoutes');
 const purchaseOrdersRoutes = require('./backend/src/routes/purchaseOrdersRoutes');
+const transferRoutes = require('./backend/src/routes/transferRoutes');
 const storeRoutes = require('./backend/src/routes/storeRoutes');
 const Store = require('./backend/models/Store');
 const connectDB = require('./config/db');
@@ -99,6 +100,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/purchase-orders', purchaseOrdersRoutes);
+app.use('/api/transfers', transferRoutes);
 app.get('/api/stores', async (req, res) => {
   try {
     if (!Store) {
@@ -120,7 +122,7 @@ app.get('/api/stores', async (req, res) => {
     });
   }
 });
-app.use('/api/stores', storeRoutes);
+// app.use('/api/stores', storeRoutes);  // disabled for demo, use inline no-auth GET
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     message: 'API + DB Connected Successfully'
