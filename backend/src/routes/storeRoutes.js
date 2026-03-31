@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const storeController = require('../controllers/storeController');
-const { requireDestructiveAuth, requireDbConnected } = require('../middlewares/securityGuards');
+const auth = require('../middlewares/auth');
+const { requireDbConnected } = require('../middlewares/securityGuards');
 
 
 
@@ -10,10 +11,10 @@ router.get('/', storeController.getStores);
 // GET store by id
 router.get('/:id', storeController.getStoreById);
 // POST create store
-router.post('/', requireDbConnected, storeController.addStore);
+router.post('/', auth, requireDbConnected, storeController.addStore);
 // PUT update store
-router.put('/:id', requireDbConnected, storeController.updateStore);
+router.put('/:id', auth, requireDbConnected, storeController.updateStore);
 // DELETE store
-router.delete('/:id', requireDbConnected, storeController.deleteStore);
+router.delete('/:id', auth, requireDbConnected, storeController.deleteStore);
 
 module.exports = router;

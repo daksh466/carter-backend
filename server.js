@@ -11,12 +11,12 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 const notFound = require('./src/middlewares/notFound');
 const errorHandler = require('./src/middlewares/errorHandler');
 const requestId = require('./src/middlewares/requestId');
-const userRoutes = require('./src/routes/userRoutes');
-const orderRoutes = require('./backend/src/routes/ordersRoutes');
+const userRoutes = require('./backend/src/routes/userRoutes'); // TODO: verify exists
+const storeOrdersRoutes = require('./backend/src/routes/storeOrdersRoutes');
 const inventoryRoutes = require('./backend/src/routes/inventoryRoutes');
-const machineRoutes = require('./backend/src/routes/machinesRoutes');
+const machinesRoutes = require('./backend/src/routes/machinesRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
-const sparePartRoutes = require('./backend/src/routes/sparePartsRoutes');
+const sparePartsRoutes = require('./backend/src/routes/sparePartsRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
 const connectionRoutes = require('./src/routes/connectionRoutes');
 const healthRoutes = require('./backend/src/routes/healthRoutes');
@@ -91,38 +91,17 @@ app.use(generalLimiter);
 // Register all routes
 app.use('/api/health', healthRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api/orders', storeOrdersRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api/machines', machineRoutes);
+app.use('/api/machines', machinesRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/spareparts', sparePartRoutes);
+app.use('/api/spares', sparePartsRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/transfers', transferRoutes);
-app.get('/api/stores', async (req, res) => {
-  try {
-    if (!Store) {
-      return res.json({ success: true, data: [], message: 'Stores fetched successfully.' });
-    }
-
-    const stores = await Store.find().sort({ createdAt: -1 });
-    return res.json({
-      success: true,
-      data: stores.map(normalizeStore),
-      message: 'Stores fetched successfully.'
-    });
-  } catch (err) {
-    logger.error('Failed to fetch stores', { error: err.message });
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch stores.',
-      error: err.message
-    });
-  }
-});
-// app.use('/api/stores', storeRoutes);  // disabled for demo, use inline no-auth GET
+app.use('/api/stores', storeRoutes);
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     message: 'API + DB Connected Successfully'

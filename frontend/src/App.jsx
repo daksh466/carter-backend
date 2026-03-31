@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import { AppProvider } from "./context/AppContext.jsx";
+import Login from "./pages/Login";
 import Alerts from "./pages/Alerts";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
@@ -23,16 +24,44 @@ import Transfers from "./pages/Transfers";
 import TransferTransit from "./pages/TransferTransit";
 import Welcome from "./pages/Welcome";
 
+const hasToken = () => {
+  if (typeof window === "undefined") return false;
+  return Boolean(String(window.localStorage.getItem("token") || "").trim());
+};
+
+const ProtectedRoute = ({ children }) => {
+  if (!hasToken()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <AppProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard/welcome" replace />} />
+          <Route path="/" element={<Navigate to={hasToken() ? "/dashboard/welcome" : "/login"} replace />} />
 
-          <Route path="/dashboard/welcome" element={<Welcome />} />
+          <Route path="/login" element={<Login />} />
 
-          <Route path="/dashboard" element={<AppLayout />}>
+          <Route
+            path="/dashboard/welcome"
+            element={
+              <ProtectedRoute>
+                <Welcome />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="home" element={<Home />} />
             <Route path="machines" element={<Machines />} />
@@ -56,7 +85,7 @@ function App() {
 
           <Route path="/inventory" element={<Navigate to="/dashboard/inventory" replace />} />
           <Route path="/alerts" element={<Navigate to="/dashboard/alerts" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard/welcome" replace />} />
+          <Route path="*" element={<Navigate to={hasToken() ? "/dashboard/welcome" : "/login"} replace />} />
         </Routes>
       </BrowserRouter>
     </AppProvider>

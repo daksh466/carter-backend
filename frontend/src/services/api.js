@@ -1,6 +1,8 @@
 import axios from "axios";
 
 export const API = import.meta.env.VITE_API_URL;
+const AUTH_TOKEN_KEY = "token";
+const AUTH_USER_KEY = "authUser";
 
 const ensureApiOrigin = (rawValue) => {
   const raw = String(rawValue || "").trim();
@@ -71,6 +73,37 @@ const readTokenFromStorage = () => {
   return "";
 };
 
+const clearAuthStorage = () => {
+  if (typeof window === "undefined") return;
+  const keysToClear = [
+    "token",
+    "accessToken",
+    "authToken",
+    "jwt",
+    "jwtToken",
+    "idToken",
+    "access_token",
+    "auth_token",
+    "authUser",
+    "user",
+    "auth",
+    "session",
+    "currentUser",
+  ];
+  keysToClear.forEach((key) => window.localStorage.removeItem(key));
+};
+
+const persistAuth = ({ token, user }) => {
+  if (typeof window === "undefined") return;
+  const safeToken = String(token || "").trim();
+  if (safeToken) {
+    window.localStorage.setItem(AUTH_TOKEN_KEY, safeToken);
+  }
+  if (user) {
+    window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+  }
+};
+
 export const API_BASE_URL = ensureApiOrigin(API);
 export const API_ROOT = `${API_BASE_URL}/api`;
 
@@ -88,6 +121,22 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = Number(error?.response?.status || 0);
+    if (status === 401 && typeof window !== "undefined") {
+      clearAuthStorage();
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      const onLoginPage = window.location.pathname === "/login";
+      if (!onLoginPage) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 const normalizeResult = (response, fallbackData = null) => {
   const payload = response?.data ?? {};
@@ -147,6 +196,23 @@ export const getStores = async () => {
       ...normalized,
       data: unwrapArray(normalized.data, ["stores"]),
     };
+  } catch (error) {
+    return normalizeError(error);
+  }
+};
+
+export const loginUser = async ({ username, password }) => {
+  try {
+    const response = await api.post("/users/login", { username, password });
+    const token = String(response?.data?.token || "").trim();
+    const user = response?.data?.user || null;
+
+    if (!token) {
+      return { success: false, error: "Login failed: token missing", data: null };
+    }
+
+    persistAuth({ token, user });
+    return { success: true, data: { token, user }, message: "Login successful" };
   } catch (error) {
     return normalizeError(error);
   }
