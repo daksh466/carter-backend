@@ -20,9 +20,25 @@ const sparePartRoutes = require('./src/routes/sparePartRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
 const connectionRoutes = require('./src/routes/connectionRoutes');
 const healthRoutes = require('./src/routes/healthRoutes');
+const storeRoutes = require('./backend/src/routes/storeRoutes');
+const Store = require('./backend/models/Store');
 const connectDB = require('./config/db');
 const fs = require('fs');
 const path = require('path');
+
+const normalizeStore = (storeDoc = {}) => {
+  const store = storeDoc?.toObject ? storeDoc.toObject() : storeDoc;
+  return {
+    ...store,
+    id: String(store._id || ''),
+    state: store.state || store.address || '',
+    storeHead: store.storeHead || store.name || '',
+    contact: store.contact || store.phone || '',
+    name: store.name || store.storeHead || '',
+    address: store.address || store.state || '',
+    phone: store.phone || store.contact || ''
+  };
+};
 
 // Ensure logs directory exists
 const logDir = path.join(__dirname, 'src', 'logs');
@@ -79,6 +95,28 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/spareparts', sparePartRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/connections', connectionRoutes);
+app.get('/api/stores', async (req, res) => {
+  try {
+    if (!Store) {
+      return res.json({ success: true, data: [], message: 'Stores fetched successfully.' });
+    }
+
+    const stores = await Store.find().sort({ createdAt: -1 });
+    return res.json({
+      success: true,
+      data: stores.map(normalizeStore),
+      message: 'Stores fetched successfully.'
+    });
+  } catch (err) {
+    logger.error('Failed to fetch stores', { error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch stores.',
+      error: err.message
+    });
+  }
+});
+app.use('/api/stores', storeRoutes);
 app.get('/api/test', (req, res) => {
   res.status(200).json({
     message: 'API + DB Connected Successfully'
