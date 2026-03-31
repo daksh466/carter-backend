@@ -1,61 +1,54 @@
-# Fix Frontend Vercel API Errors (404/401s)
+# Disable Authentication Middleware - Progress Tracker
 
-## Status: Planning → Implementation
+## Status: Implementation
 
-**Root Causes:**
-- Backend route import path mismatches (src/ vs backend/src/)
-- Missing app.use() mounts for /api/alerts, /api/purchase-orders
-- Auth middleware blocking unauth requests (no JWT token in prod demo)
-- Chart width/height: Already mitigated in Dashboard.jsx with ResizeObserver + minHeight
+**Goal**: Remove `requireDestructiveAuth` from all routes for demo (keep `requireDbConnected` for DB safety). No 401s on any API.
 
-## Step-by-Step Plan (Backend First)
+**Files to Update**: 7 total
+- 5 route files (`backend/src/routes/`)
+- `backend/src/middlewares/securityGuards.js` (global bypass)
+- `backend/server.js` (inline routes)
 
-### [x] 1. Fix server.js (High Priority)
-- Updated imports to backend/src/routes/*
-- Added /api/alert
-```
-- Update all route imports: require('./backend/src/routes/xxxRoutes')
-- Add missing mounts:
-  app.use('/api/alerts', alertRoutes);
-  app.use('/api/purchase-orders', purchaseRoutes);
-- Fix storeRoutes path (already partially inline)
-- Remove auth from GET routes for demo
-```
+## Steps:
 
-### [ ] 2. Standardize Route Files
-```
-- backend/src/routes/ordersRoutes.js etc. → use controllers without auth on GET
-- Stub data if controllers empty: res.json({success:true, data:[]})
-```
+### [x] Step 1: Update securityGuards.js ✅
+- Replaced `requireDestructiveAuth` with bypass (`next()` + mock user)
+- Path: `backend/src/middlewares/securityGuards.js`
+- Now safe global disable, easy revert
 
-### [ ] 3. Test Backend Locally
-```
-cd backend
-npm install
-npm start
-Test: curl http://localhost:5000/api/orders
-Expect: 200 JSON not 404/401
-```
+### [x] Step 2: Edit route files (5 files) ✅
+- Removed `requireDestructiveAuth` from all POST/PUT/PATCH/DELETE routes
+- Kept `requireDbConnected` + imports (safe, clean)
+- Files updated:
+  | File | Status |
+  |------|--------|
+  | `backend/src/routes/storeRoutes.js` | ✅ |
+  | `backend/src/routes/transferRoutes.js` | ✅ |
+  | `backend/src/routes/storeOrdersRoutes.js` | ✅ |
+  | `backend/src/routes/sparePartsRoutes.js` | ✅ |
+  | `backend/src/routes/purchaseOrdersRoutes.js` | ✅ |
 
-### [ ] 4. Deploy Backend (Render)
-```
-git add backend/
-git commit -m \"fix: standardize backend routes/imports/public APIs\"
-git push
-Monitor Render logs
-```
+### [ ] Step 3: Update backend/server.js inline routes
+- Remove `requireDestructiveAuth` from ~10 POST/PUT/DELETE routes
+- Keep `requireDbConnected`
 
-### [ ] 5. Verify Frontend
+### [ ] Step 4: Verify
+- No linter errors
+- Imports clean (no unused securityGuards)
+
+### [ ] Step 5: Test Commands
 ```
-- Reload Vercel site
-- Check console: no more 404/401
-- Charts render (already fixed)
+# Terminal 1 (root)
+node server.js
+
+# Terminal 2 (backend)
+cd backend && node server.js
+
+# Test no-auth POST
+curl -X POST http://localhost:5000/api/stores -H 'Content-Type: application/json' -d '{}'
 ```
 
-### [ ] 6. Re-enable Auth Later
-```
-- Add login/register page
-- Store JWT in localStorage
-```
+**Next**: Step 1 complete → Update checkboxes → Step 2 → etc.
 
-**Next Action:** Edit server.js → Mark Step 1 complete
+**Revert**: Restore original `requireDestructiveAuth` impl + remove // TEMP comments.
+

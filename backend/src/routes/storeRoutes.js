@@ -10,10 +10,10 @@ router.get('/', storeController.getStores);
 // GET store by id
 router.get('/:id', storeController.getStoreById);
 // POST create store
-router.post('/', requireDbConnected, requireDestructiveAuth, storeController.addStore);
+router.post('/', requireDbConnected, storeController.addStore);
 // PUT update store
-router.put('/:id', requireDbConnected, requireDestructiveAuth, storeController.updateStore);
+router.put('/:id', requireDbConnected, storeController.updateStore);
 // DELETE store
-router.delete('/:id', requireDbConnected, requireDestructiveAuth, storeController.deleteStore);
+router.delete('/:id', requireDbConnected, storeController.deleteStore);
 
 module.exports = router;

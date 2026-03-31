@@ -7,12 +7,12 @@ const { requireDestructiveAuth, requireDbConnected } = require('../middlewares/s
 router.get('/', sparePartsController.getSpareParts);
 
 // POST /api/spares - Create a new spare part
-router.post('/', requireDbConnected, requireDestructiveAuth, sparePartsController.createSparePart);
+router.post('/', requireDbConnected, sparePartsController.createSparePart);
 
 // POST /api/spares/merge-duplicates - Merge duplicate spare parts by normalized item name
-router.post('/merge-duplicates', requireDbConnected, requireDestructiveAuth, sparePartsController.mergeDuplicateSpareParts);
+router.post('/merge-duplicates', requireDbConnected, sparePartsController.mergeDuplicateSpareParts);
 
 // DELETE /api/spares/:id - Delete a spare part by ID
-router.delete('/:id', requireDbConnected, requireDestructiveAuth, sparePartsController.deleteSparePart);
+router.delete('/:id', requireDbConnected, sparePartsController.deleteSparePart);
 
 module.exports = router;

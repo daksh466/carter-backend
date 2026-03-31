@@ -405,7 +405,7 @@ app.get('/api/orders-list', async (req, res) => {
   }
 });
 
-app.post('/api/orders-list', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.post('/api/orders-list', requireDbConnected, async (req, res) => {
   try {
     if (!Order) return res.status(500).json({ success: false, message: 'Order model not initialized' });
     const { customerName, customerEmail, customerPhone, machines, totalAmount, paymentStatus, verifiedBy, orderDate } = req.body;
@@ -418,7 +418,7 @@ app.post('/api/orders-list', requireDbConnected, requireDestructiveAuth, async (
   }
 });
 
-app.delete('/api/orders/:id', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.delete('/api/orders/:id', requireDbConnected, async (req, res) => {
   try {
     if (!Order) return res.json({ success: true, message: 'Order deleted', data: null });
     await Order.findByIdAndUpdate(
@@ -469,7 +469,7 @@ app.get('/api/stores/:storeId/machines', async (req, res) => {
   }
 });
 
-app.post('/api/machines', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.post('/api/machines', requireDbConnected, async (req, res) => {
   try {
     if (!Machine) return res.status(500).json({ success: false, message: 'Machine model not initialized' });
     const { name, store_id, quantity_available, minimum_required, warranty_expiry_date } = req.body;
@@ -483,7 +483,7 @@ app.post('/api/machines', requireDbConnected, requireDestructiveAuth, async (req
   }
 });
 
-app.delete('/api/machines/:id', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.delete('/api/machines/:id', requireDbConnected, async (req, res) => {
   try {
     if (!Machine) {
       return res.status(500).json({ success: false, message: 'Machine model not initialized' });
@@ -526,7 +526,7 @@ app.get('/api/spares', async (req, res) => {
 });
 
 // Admin migration endpoint (run once)
-app.post('/api/admin/migrate-variants', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.post('/api/admin/migrate-variants', requireDbConnected, async (req, res) => {
   const { migrateVariants } = require('./src/utils/migrateVariants');
   migrateVariants(req, res);
 });
@@ -617,7 +617,7 @@ app.get('/api/spares/global', async (req, res) => {
   }
 });
 
-app.post('/api/spares', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.post('/api/spares', requireDbConnected, async (req, res) => {
   try {
     if (!SparePart) return res.status(500).json({ success: false, message: 'SparePart model not initialized' });
     const normalizedName = String(req.body?.name || '').trim().toLowerCase();
@@ -753,7 +753,7 @@ app.post('/api/spares', requireDbConnected, requireDestructiveAuth, async (req, 
   }
 });
 
-app.post('/api/spares/merge-duplicates', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.post('/api/spares/merge-duplicates', requireDbConnected, async (req, res) => {
   try {
     if (!SparePart) return res.status(500).json({ success: false, message: 'SparePart model not initialized' });
 
@@ -829,7 +829,7 @@ app.post('/api/spares/merge-duplicates', requireDbConnected, requireDestructiveA
   }
 });
 
-app.put('/api/spares/:id', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.put('/api/spares/:id', requireDbConnected, async (req, res) => {
   try {
     if (!SparePart) {
       return res.status(500).json({ success: false, message: 'SparePart model not initialized' });
@@ -941,7 +941,7 @@ app.put('/api/spares/:id', requireDbConnected, requireDestructiveAuth, async (re
   }
 });
 
-app.delete('/api/spares/:id', requireDbConnected, requireDestructiveAuth, async (req, res) => {
+app.delete('/api/spares/:id', requireDbConnected, async (req, res) => {
   try {
     if (!SparePart) return res.json({ success: true, message: 'Spare part deleted', data: null });
     await SparePart.findByIdAndUpdate(

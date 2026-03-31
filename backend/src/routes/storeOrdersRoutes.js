@@ -7,12 +7,12 @@ const { requireDestructiveAuth, requireDbConnected } = require('../middlewares/s
 router.get('/', storeOrdersController.getOrders);
 
 // POST /api/orders
-router.post('/', requireDbConnected, requireDestructiveAuth, storeOrdersController.createOrder);
+router.post('/', requireDbConnected, storeOrdersController.createOrder);
 
 // PATCH /api/orders/:id/confirm-receive
-router.patch('/:id/confirm-receive', requireDbConnected, requireDestructiveAuth, storeOrdersController.confirmReceive);
+router.patch('/:id/confirm-receive', requireDbConnected, storeOrdersController.confirmReceive);
 
 // PATCH /api/orders/:id/confirm-dispatch
-router.patch('/:id/confirm-dispatch', requireDbConnected, requireDestructiveAuth, storeOrdersController.confirmDispatch);
+router.patch('/:id/confirm-dispatch', requireDbConnected, storeOrdersController.confirmDispatch);
 
 module.exports = router;
