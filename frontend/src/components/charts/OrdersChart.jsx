@@ -59,7 +59,7 @@ const OrdersChart = ({ orders = [] }) => {
   return (
     <div ref={frameRef} style={{ width: "100%", minHeight: 300, height: 300, minWidth: 1 }}>
       {canRender ? (
-      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={300}>
+      <ResponsiveContainer width="100%" height={300} minWidth={1} minHeight={300}>
         <BarChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
           <XAxis dataKey="name" tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={{ stroke: "#475569" }} />

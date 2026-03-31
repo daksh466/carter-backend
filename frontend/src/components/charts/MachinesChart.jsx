@@ -70,7 +70,7 @@ const MachinesChart = ({ machines = [] }) => {
   return (
     <div ref={frameRef} style={{ width: "100%", minHeight: 300, height: 300, minWidth: 1 }}>
       {canRender ? (
-      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={300}>
+      <ResponsiveContainer width="100%" height={300} minWidth={1} minHeight={300}>
         <PieChart>
           <Pie
             data={chartData}

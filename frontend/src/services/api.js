@@ -3,10 +3,11 @@ import axios from "axios";
 const ensureApiPath = (rawValue) => {
   const raw = String(rawValue || "").trim();
   if (!raw) {
-    return "http://localhost:5000/api";
+    return "/api";
   }
 
   if (!/^https?:\/\//i.test(raw)) {
+    if (raw === "/" || raw === "") return "/api";
     if (raw === "/api" || raw === "/api/") return "/api";
     return raw.endsWith("/") ? raw.slice(0, -1) : raw;
   }
@@ -22,12 +23,73 @@ const ensureApiPath = (rawValue) => {
 };
 
 const resolveBaseUrl = () => {
+  if (typeof window !== "undefined" && /(^|\.)vercel\.app$/i.test(window.location.hostname)) {
+    return "/api";
+  }
+
   const configured = String(import.meta.env?.VITE_API_URL || "").trim();
   return ensureApiPath(configured);
 };
 
+const readTokenFromStorage = () => {
+  if (typeof window === "undefined") return "";
+
+  const directKeyCandidates = [
+    "token",
+    "accessToken",
+    "authToken",
+    "jwt",
+    "jwtToken",
+    "idToken",
+    "access_token",
+    "auth_token",
+  ];
+
+  for (const key of directKeyCandidates) {
+    const value = String(window.localStorage.getItem(key) || "").trim();
+    if (value) return value;
+  }
+
+  const jsonCandidates = ["user", "auth", "session", "currentUser"];
+  for (const key of jsonCandidates) {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) continue;
+    try {
+      const parsed = JSON.parse(raw);
+      const nested =
+        parsed?.token ||
+        parsed?.accessToken ||
+        parsed?.authToken ||
+        parsed?.jwt ||
+        parsed?.data?.token ||
+        parsed?.data?.accessToken ||
+        parsed?.user?.token ||
+        parsed?.user?.accessToken;
+      const token = String(nested || "").trim();
+      if (token) return token;
+    } catch {
+      // Continue scanning other keys if one persisted blob is malformed.
+    }
+  }
+
+  return "";
+};
+
+export const API_BASE_URL = resolveBaseUrl();
+
 const api = axios.create({
-  baseURL: resolveBaseUrl(),
+  baseURL: API_BASE_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = readTokenFromStorage();
+  if (token) {
+    config.headers = config.headers || {};
+    if (!config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
 });
 
 const normalizeResult = (response, fallbackData = null) => {
@@ -48,14 +110,27 @@ const normalizeResult = (response, fallbackData = null) => {
 
 const normalizeError = (error) => {
   const payload = error?.response?.data || {};
+  const status = Number(error?.response?.status || 0);
+  const path = error?.config?.url || "unknown-endpoint";
+  const message = payload?.message || payload?.error || error?.message || "Request failed";
+
+  // Centralized client-side API error logging for easier production debugging.
+  console.error("API request failed", {
+    status,
+    path,
+    message,
+  });
+
   return {
     success: false,
     data: null,
     message: payload?.message || "",
-    error: payload?.error || payload?.message || error?.message || "Request failed",
+    error: message,
     errors: payload?.errors,
   };
 };
+
+const isNotFoundError = (error) => Number(error?.response?.status || 0) === 404;
 
 const unwrapArray = (value, fallbackKeys = []) => {
   if (Array.isArray(value)) return value;
@@ -215,8 +290,21 @@ export const getAlerts = async () => {
       ...normalized,
       data: unwrapArray(normalized.data, ["alerts"]),
     };
-  } catch (error) {
-    return normalizeError(error);
+  } catch (firstError) {
+    if (!isNotFoundError(firstError)) {
+      return normalizeError(firstError);
+    }
+
+    try {
+      const fallback = await api.get("/inventory/alerts");
+      const normalized = normalizeResult(fallback);
+      return {
+        ...normalized,
+        data: unwrapArray(normalized.data, ["alerts"]),
+      };
+    } catch (error) {
+      return normalizeError(error || firstError);
+    }
   }
 };
 
@@ -230,6 +318,10 @@ export const getOrders = async (params = {}) => {
       summary: normalized.summary || normalized.data?.summary,
     };
   } catch (firstError) {
+    if (!isNotFoundError(firstError)) {
+      return normalizeError(firstError);
+    }
+
     try {
       const fallback = await api.get("/orders-list", { params });
       const normalized = normalizeResult(fallback);
@@ -253,6 +345,10 @@ export const createOrder = async (payload) => {
       data: normalized.data?.order || normalized.data,
     };
   } catch (firstError) {
+    if (!isNotFoundError(firstError)) {
+      return normalizeError(firstError);
+    }
+
     try {
       const fallback = await api.post("/orders-list", payload);
       const normalized = normalizeResult(fallback);
@@ -271,6 +367,10 @@ export const deleteOrder = async (id) => {
     const response = await api.delete(`/orders/${id}`);
     return normalizeResult(response);
   } catch (firstError) {
+    if (!isNotFoundError(firstError)) {
+      return normalizeError(firstError);
+    }
+
     try {
       const fallback = await api.delete(`/orders-list/${id}`);
       return normalizeResult(fallback);

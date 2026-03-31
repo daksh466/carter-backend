@@ -6,6 +6,23 @@ const getOrderAmount = (order = {}) => Number(order.totalAmount ?? order.price ?
 const getSafeError = (message) => message || "Failed to load data";
 const getMachineRecordId = (machine = {}) => String(machine?.id || machine?._id || "").trim();
 
+const hasClientAuthToken = () => {
+  if (typeof window === "undefined") return false;
+
+  const directKeyCandidates = [
+    "token",
+    "accessToken",
+    "authToken",
+    "jwt",
+    "jwtToken",
+    "idToken",
+    "access_token",
+    "auth_token",
+  ];
+
+  return directKeyCandidates.some((key) => String(window.localStorage.getItem(key) || "").trim().length > 0);
+};
+
 const normalizeMachine = (machine = {}) => {
   const quantity = Number(machine.quantity ?? machine.quantity_available ?? machine.stock ?? 0);
   const minRequired = Number(machine.minRequired ?? machine.minimumRequired ?? machine.minimum_required ?? 0);
@@ -141,6 +158,10 @@ export const AppProvider = ({ children }) => {
 
   // Fetch stores on mount
   useEffect(() => {
+    if (!hasClientAuthToken()) {
+      setLoading(false);
+      return;
+    }
     refreshStores();
     // eslint-disable-next-line
   }, []);
@@ -198,6 +219,12 @@ export const AppProvider = ({ children }) => {
 
   // Fetch alerts on mount
   useEffect(() => {
+    if (!hasClientAuthToken()) {
+      setAlerts([]);
+      setAlertsLoading(false);
+      return;
+    }
+
     const fetchAlerts = async () => {
       try {
         setAlertsLoading(true);
@@ -221,6 +248,13 @@ export const AppProvider = ({ children }) => {
 
   // Fetch orders on mount
   useEffect(() => {
+    if (!hasClientAuthToken()) {
+      setOrders([]);
+      setOrdersSummary(buildOrdersSummary([]));
+      setOrdersLoading(false);
+      return;
+    }
+
     const fetchOrders = async () => {
       try {
         setOrdersLoading(true);
@@ -275,6 +309,11 @@ export const AppProvider = ({ children }) => {
   }, [selectedStore]);
 
   useEffect(() => {
+    if (!hasClientAuthToken()) {
+      setPurchases([]);
+      setPurchasesLoading(false);
+      return;
+    }
     refreshPurchases();
   }, [selectedStore, refreshPurchases]);
 
@@ -308,6 +347,11 @@ export const AppProvider = ({ children }) => {
   }, [selectedStore]);
 
   useEffect(() => {
+    if (!hasClientAuthToken()) {
+      setTransfers([]);
+      setTransfersLoading(false);
+      return;
+    }
     refreshTransfers();
   }, [selectedStore, refreshTransfers]);
 

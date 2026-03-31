@@ -1,34 +1,5 @@
 import React, { useState } from "react";
-
-const normalizeApiBase = (value) => {
-  const fallback = '/api';
-  const raw = String(value || '').trim();
-  if (!raw) {
-    return fallback;
-  }
-
-  const currentHost = String(window.location?.hostname || '').toLowerCase();
-  const isLocalHost = currentHost === 'localhost' || currentHost === '127.0.0.1';
-  if (!isLocalHost && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(raw)) {
-    return fallback;
-  }
-
-  if (!/^https?:\/\//i.test(raw)) {
-    if (raw === '/api' || raw === '/api/') return '/api';
-    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-  }
-
-  try {
-    const parsed = new URL(raw);
-    const path = parsed.pathname.replace(/\/+$/, '');
-    parsed.pathname = path.toLowerCase().endsWith('/api') ? path : `${path || ''}/api`;
-    return parsed.toString().replace(/\/+$/, '');
-  } catch {
-    return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-  }
-};
-
-const API = normalizeApiBase(import.meta.env.VITE_API_URL);
+import api from "../services/api";
 
 const ApiStatusChecker = () => {
   const [status, setStatus] = useState(null);
@@ -40,18 +11,19 @@ const ApiStatusChecker = () => {
     setError(null);
     setData(null);
     try {
-      const res = await fetch(`${API}/machines`);
-      if (!res.ok) {
+      const res = await api.get("/machines");
+      if (!res?.data) {
         setStatus("fail");
-        setError(`HTTP ${res.status}: ${res.statusText}`);
+        setError("Empty response from backend");
         return;
       }
-      const json = await res.json();
-      setData(json);
+      setData(res.data);
       setStatus("ok");
     } catch (err) {
       setStatus("fail");
-      setError(err.message);
+      const message = err?.response?.data?.message || err?.message || "Request failed";
+      console.error("API status check failed", err);
+      setError(message);
     }
   };
 

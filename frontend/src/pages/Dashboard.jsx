@@ -258,7 +258,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div ref={usageChartRef} className="h-[220px]" style={{ minWidth: 1, minHeight: 220 }}>
                     {canRenderUsageChart ? (
-                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={220}>
+                    <ResponsiveContainer width="100%" height={220} minWidth={1} minHeight={220}>
                       <AreaChart data={usageTrends}>
                         <defs><linearGradient id="usageGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
                         <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.1)" />
@@ -272,7 +272,7 @@ const Dashboard = () => {
                   </div>
                   <div ref={distributionChartRef} className="h-[220px]" style={{ minWidth: 1, minHeight: 220 }}>
                     {canRenderDistributionChart ? (
-                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={220}>
+                    <ResponsiveContainer width="100%" height={220} minWidth={1} minHeight={220}>
                       <RePieChart>
                         <Pie data={inventoryDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={3}>
                           {inventoryDistribution.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}

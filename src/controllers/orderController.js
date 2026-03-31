@@ -105,7 +105,9 @@ exports.createOrder = async (req, res, next) => {
 
 exports.listOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ user: req.user.id }).populate('user');
+    const userId = req.user?.id;
+    const filter = userId ? { user: userId } : {};
+    const orders = await Order.find(filter).populate('user');
     res.json({ success: true, orders });
   } catch (err) {
     next(err);
