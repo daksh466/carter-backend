@@ -3,10 +3,10 @@ const router = express.Router();
 const storeOrdersController = require('../controllers/storeOrdersController');
 const { requireDestructiveAuth, requireDbConnected } = require('../middlewares/securityGuards');
 
-// GET /api/orders
+// GET /api/orders (public read)
 router.get('/', storeOrdersController.getOrders);
 
-// POST /api/orders
+// POST /api/orders (protected)
 router.post('/', requireDbConnected, requireDestructiveAuth, storeOrdersController.createOrder);
 
 // PATCH /api/orders/:id/confirm-receive

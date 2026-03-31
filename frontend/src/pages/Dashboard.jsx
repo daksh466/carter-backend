@@ -119,16 +119,17 @@ const Dashboard = () => {
   } = useApp();
 
   // ... (keep all existing useMemo logic for activeLocations, highPrioritySpares, criticalSpares, totalInventoryValue, topSparesDemand, usageTrends, inventoryDistribution, recentTransfers, transferSummary, ordersSummary)
-  const highPrioritySpares = useMemo(() => spareParts.filter(part => ["high", "critical", "urgent", "p1"].includes(String(part.importance ?? part.priority ?? part.criticality ?? "").toLowerCase())), [spareParts]);
-  const criticalSpares = useMemo(() => lowStockSpareParts.filter(part => highPrioritySpares.some(hp => String(hp.id ?? hp._id) === String(part.id ?? part._id))).length, [highPrioritySpares, lowStockSpareParts]);
-  const totalInventoryValue = useMemo(() => spareParts.reduce((sum, part) => {
+  const highPrioritySpares = useMemo(() => (Array.isArray(spareParts) ? spareParts : []).filter(part => ["high", "critical", "urgent", "p1"].includes(String(part.importance ?? part.priority ?? part.criticality ?? "").toLowerCase())), [spareParts]);
+  const criticalSpares = useMemo(() => (Array.isArray(lowStockSpareParts) ? lowStockSpareParts : []).filter(part => (Array.isArray(highPrioritySpares) ? highPrioritySpares : []).some(hp => String(hp.id ?? hp._id) === String(part.id ?? part._id))).length, [highPrioritySpares, lowStockSpareParts]);
+  const totalInventoryValue = useMemo(() => (Array.isArray(spareParts) ? spareParts : []).reduce((sum, part) => {
     const qty = Number(part.quantity ?? part.stock ?? 0) || 0;
     const cost = Number(part.purchase_cost ?? part.purchaseCost ?? part.cost ?? part.costPrice ?? part.unitPrice ?? 0) || 0;
     return sum + qty * cost;
   }, 0), [spareParts]);
   const topSparesDemand = useMemo(() => {
     const demand = new Map();
-    for (const order of orders) {
+    const orderArray = Array.isArray(orders) ? orders : [];
+    for (const order of orderArray) {
       const items = Array.isArray(order.items) ? order.items : [];
       for (const item of items) {
         const name = String(item.itemName ?? item.name ?? item.sparePartName ?? "Unknown");
@@ -136,13 +137,15 @@ const Dashboard = () => {
         demand.set(name, (demand.get(name) || 0) + qty);
       }
     }
-    if (demand.size === 0) return lowStockSpareParts.slice(0, 5).map(part => ({ name: String(part.name ?? "Unknown"), value: Number(part.minimumRequired ?? part.minRequired ?? 1) || 1 }));
+    const sparesList = Array.isArray(lowStockSpareParts) ? lowStockSpareParts : [];
+    if (demand.size === 0) return sparesList.slice(0, 5).map(part => ({ name: String(part.name ?? "Unknown"), value: Number(part.minimumRequired ?? part.minRequired ?? 1) || 1 }));
     return [...demand.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 5);
   }, [orders, lowStockSpareParts]);
   const usageTrends = useMemo(() => {
     const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
     const monthBuckets = labels.map(label => ({ label, usage: 0 }));
-    for (const order of orders) {
+    const orderArray = Array.isArray(orders) ? orders : [];
+    for (const order of orderArray) {
       const date = new Date(order.createdAt ?? order.date ?? Date.now());
       const month = date.getMonth();
       const bucketIndex = month % 6;
@@ -154,7 +157,8 @@ const Dashboard = () => {
   }, [orders]);
   const inventoryDistribution = useMemo(() => {
     const buckets = { Critical: 0, Low: 0, Healthy: 0, Surplus: 0 };
-    for (const part of spareParts) {
+    const partsList = Array.isArray(spareParts) ? spareParts : [];
+    for (const part of partsList) {
       const qty = Number(part.quantity ?? part.stock ?? 0) || 0;
       const min = Number(part.minimumRequired ?? part.minRequired ?? 5) || 5;
       if (qty <= min) buckets.Critical += 1;
@@ -169,10 +173,14 @@ const Dashboard = () => {
       { name: "Surplus", value: buckets.Surplus, fill: "#38bdf8" },
     ];
   }, [spareParts]);
-  const recentTransfers = useMemo(() => [...transfers].sort((a, b) => new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime()).slice(0, 5), [transfers]);
+  const recentTransfers = useMemo(() => {
+    const transfersList = Array.isArray(transfers) ? transfers : [];
+    return [...transfersList].sort((a, b) => new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime()).slice(0, 5);
+  }, [transfers]);
   const transferSummary = useMemo(() => {
     let incoming = 0, outgoing = 0, inTransit = 0;
-    for (const transfer of transfers) {
+    const transfersList = Array.isArray(transfers) ? transfers : [];
+    for (const transfer of transfersList) {
       const direction = String(transfer.direction ?? transfer.type ?? transfer.transferType ?? "").toLowerCase();
       if (direction.includes("in")) incoming += 1;
       if (direction.includes("out")) outgoing += 1;
@@ -182,10 +190,11 @@ const Dashboard = () => {
     return { incoming, outgoing, inTransit };
   }, [transfers]);
   const ordersSummary = useMemo(() => {
-    const total = orders.length;
-    const paid = orders.filter(order => order.paymentStatus === "Paid").length;
+    const ordersList = Array.isArray(orders) ? orders : [];
+    const total = ordersList.length;
+    const paid = ordersList.filter(order => order.paymentStatus === "Paid").length;
     const pending = total - paid;
-    const totalAmount = orders.reduce((sum, order) => sum + Number(order.totalAmount ?? order.price ?? 0), 0);
+    const totalAmount = ordersList.reduce((sum, order) => sum + Number(order.totalAmount ?? order.price ?? 0), 0);
     return { total, paid, pending, totalAmount };
   }, [orders]);
 
@@ -244,11 +253,11 @@ const Dashboard = () => {
               <div>
                 <h4 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wide">Top Demand Spares</h4>
                 <div className="space-y-3">
-                  {topSparesDemand.slice(0,6).map((item, i) => (
+                  {((Array.isArray(topSparesDemand) ? topSparesDemand : []).slice(0,6)).map((item, i) => (
                     <div key={i} className="group flex items-center justify-between p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800/80 transition-all">
-                      <span className="text-sm font-semibold text-slate-200 min-w-0 truncate">{item.name}</span>
+                      <span className="text-sm font-semibold text-slate-200 min-w-0 truncate">{item?.name || "Unknown"}</span>
                       <div className="flex items-center gap-3">
-                        <ProgressBar value={item.value} max={50} color="blue" />
+                        <ProgressBar value={item?.value || 0} max={50} color="blue" />
                       </div>
                     </div>
                   ))}
@@ -274,8 +283,8 @@ const Dashboard = () => {
                     {canRenderDistributionChart ? (
                     <ResponsiveContainer width="100%" height={220} minWidth={1} minHeight={220}>
                       <RePieChart>
-                        <Pie data={inventoryDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={3}>
-                          {inventoryDistribution.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                        <Pie data={Array.isArray(inventoryDistribution) ? inventoryDistribution : []} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={3}>
+                          {(Array.isArray(inventoryDistribution) ? inventoryDistribution : []).map((entry, index) => <Cell key={`cell-${index}`} fill={entry?.fill || "#94a3b8"} />)}
                         </Pie>
                         <Tooltip contentStyle={chartTooltipStyle} />
                       </RePieChart>

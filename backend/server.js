@@ -407,8 +407,11 @@ app.use('/api/purchases', purchaseOrdersRoutes);
 app.use('/api/transfers', transferRoutes);
 app.use('/api/orders', storeOrdersRoutes);
 
-// Alerts placeholder
+// Alerts placeholder + fallback
 app.get('/api/alerts', (req, res) => {
+  res.json({ success: true, data: { alerts: [], summary: { total: 0 } } });
+});
+app.get('/api/inventory/alerts', (req, res) => {
   res.json({ success: true, data: { alerts: [], summary: { total: 0 } } });
 });
 

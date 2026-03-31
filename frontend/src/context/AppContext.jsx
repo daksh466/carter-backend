@@ -135,8 +135,11 @@ export const AppProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      console.log("[AppContext] Fetching stores...");
       const response = await getStores();
+      console.log("[AppContext] getStores response:", response);
       const apiStores = Array.isArray(response?.data) ? response.data : [];
+      console.log("[AppContext] Setting stores to:", apiStores.length, "items");
       setStores(apiStores);
       // If selectedStore is missing in new list, reset to first or ""
       if (!apiStores.find(s => s.id === selectedStore)) {
@@ -145,9 +148,9 @@ export const AppProvider = ({ children }) => {
       if (!response?.success) {
         setError(getSafeError(response?.error));
       }
-      // Debug logs
 
     } catch (err) {
+      console.error("[AppContext] Error fetching stores:", err);
       setStores([]);
       setSelectedStore("");
       setError(getSafeError(err?.message));
@@ -173,14 +176,18 @@ export const AppProvider = ({ children }) => {
       try {
         setStoreLoading(true);
         setStoreError(null);
+        console.log("[AppContext] Fetching machines for store:", selectedStore);
         const response = await getMachinesByStore(selectedStore);
+        console.log("[AppContext] getMachinesByStore response:", response);
         const apiMachines = Array.isArray(response?.data) ? response.data.map(normalizeMachine) : [];
+        console.log("[AppContext] Setting machines to:", apiMachines.length, "items");
         setMachines(apiMachines);
 
         if (!response?.success) {
           setStoreError(getSafeError(response?.error));
         }
       } catch (err) {
+        console.error("[AppContext] Error fetching machines:", err);
         setMachines([]);
         setStoreError(getSafeError(err?.message));
       } finally {
@@ -197,17 +204,18 @@ export const AppProvider = ({ children }) => {
       try {
         setStoreLoading(true);
         setStoreError(null);
+        console.log("[AppContext] Fetching spare parts for store:", selectedStore);
         const response = await getSpareParts({ storeId: selectedStore });
-        if (import.meta.env.DEV) {
-          console.log("API response:", response?.data);
-        }
+        console.log("[AppContext] getSpareParts response:", response);
         const apiSpareParts = Array.isArray(response?.data) ? response.data.map(normalizeSparePart) : [];
+        console.log("[AppContext] Setting spare parts to:", apiSpareParts.length, "items");
         setSpareParts(apiSpareParts);
 
         if (!response?.success) {
           setStoreError(getSafeError(response?.error));
         }
       } catch (err) {
+        console.error("[AppContext] Error fetching spare parts:", err);
         setSpareParts([]);
         setStoreError(getSafeError(err?.message));
       } finally {
@@ -229,14 +237,18 @@ export const AppProvider = ({ children }) => {
       try {
         setAlertsLoading(true);
         setAlertsError(null);
+        console.log("[AppContext] Fetching alerts...");
         const response = await getAlerts();
+        console.log("[AppContext] getAlerts response:", response);
         const apiAlerts = Array.isArray(response?.data) ? response.data : [];
+        console.log("[AppContext] Setting alerts to:", apiAlerts.length, "items");
         setAlerts(apiAlerts);
 
         if (!response?.success) {
           setAlertsError(getSafeError(response?.error));
         }
       } catch (err) {
+        console.error("[AppContext] Error fetching alerts:", err);
         setAlerts([]);
         setAlertsError(getSafeError(err?.message));
       } finally {
@@ -259,8 +271,11 @@ export const AppProvider = ({ children }) => {
       try {
         setOrdersLoading(true);
         setOrdersError(null);
+        console.log("[AppContext] Fetching orders...");
         const response = await getOrders();
+        console.log("[AppContext] getOrders response:", response);
         const apiOrders = Array.isArray(response?.data) ? response.data : [];
+        console.log("[AppContext] Setting orders to:", apiOrders.length, "items");
         const summaryToUse = response?.summary || buildOrdersSummary(apiOrders);
 
         setOrders(apiOrders);
@@ -270,6 +285,7 @@ export const AppProvider = ({ children }) => {
           setOrdersError(getSafeError(response?.error));
         }
       } catch (err) {
+        console.error("[AppContext] Error fetching orders:", err);
         setOrders([]);
         setOrdersSummary(buildOrdersSummary([]));
         setOrdersError(getSafeError(err?.message));
@@ -328,16 +344,22 @@ export const AppProvider = ({ children }) => {
         query.storeId = selectedStore;
       }
 
+      console.log("[AppContext] Fetching transfers with filters:", query);
       const response = await getTransfers(query);
+      console.log("[AppContext] getTransfers response:", response);
       if (response.success) {
-        setTransfers(Array.isArray(response?.data) ? response.data : []);
+        const transfersArray = Array.isArray(response?.data) ? response.data : [];
+        console.log("[AppContext] Setting transfers to:", transfersArray.length, "items");
+        setTransfers(transfersArray);
       } else {
+        console.warn("[AppContext] getTransfers failed:", response?.error);
         setTransfers([]);
         setTransfersError(getSafeError(response?.error));
       }
 
       return response;
     } catch (err) {
+      console.error("[AppContext] Error fetching transfers:", err);
       setTransfers([]);
       setTransfersError(getSafeError(err?.message));
       return { success: false, error: getSafeError(err?.message), data: [] };
@@ -646,30 +668,30 @@ export const AppProvider = ({ children }) => {
   // Debug logs removed
   useEffect(() => {}, [stores, selectedStore]);
   const filteredMachines = useMemo(() => {
-    if (!searchQuery) return machines;
+    if (!searchQuery) return Array.isArray(machines) ? machines : [];
     const query = searchQuery.toLowerCase();
-    return machines.filter(m => String(m.name || "").toLowerCase().includes(query));
+    return (Array.isArray(machines) ? machines : []).filter(m => String(m.name || "").toLowerCase().includes(query));
   }, [machines, searchQuery]);
   const filteredSpareParts = useMemo(() => {
-    if (!searchQuery) return spareParts;
+    if (!searchQuery) return Array.isArray(spareParts) ? spareParts : [];
     const query = searchQuery.toLowerCase();
-    return spareParts.filter(sp => String(sp.name || "").toLowerCase().includes(query));
+    return (Array.isArray(spareParts) ? spareParts : []).filter(sp => String(sp.name || "").toLowerCase().includes(query));
   }, [spareParts, searchQuery]);
-  const lowStockMachines = useMemo(() => machines.filter((machine) => {
+  const lowStockMachines = useMemo(() => (Array.isArray(machines) ? machines : []).filter((machine) => {
     const quantity = Number(machine.quantity ?? machine.quantity_available ?? machine.stock ?? 0);
     const minRequired = Number(machine.minRequired ?? machine.minimumRequired ?? machine.minimum_required ?? 0);
     return quantity <= minRequired;
   }), [machines]);
-  const lowStockSpareParts = useMemo(() => spareParts.filter((part) => {
+  const lowStockSpareParts = useMemo(() => (Array.isArray(spareParts) ? spareParts : []).filter((part) => {
     const quantity = Number(part.quantity ?? part.quantity_available ?? part.availableQty ?? part.available_qty ?? part.stock ?? 0);
     const minRequired = Number(part.minRequired ?? part.minimumRequired ?? part.minimum_required ?? part.min_required ?? 0);
     return quantity <= minRequired;
   }), [spareParts]);
-  const expiringWarranties = useMemo(() => machines.filter((m) => {
+  const expiringWarranties = useMemo(() => (Array.isArray(machines) ? machines : []).filter((m) => {
     const expiry = m.warrantyExpiryDate ?? m.warranty_expiry_date ?? m.warranty;
     return expiry && new Date(expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   }), [machines]);
-  const totalAlerts = useMemo(() => alerts.length, [alerts]);
+  const totalAlerts = useMemo(() => (Array.isArray(alerts) ? alerts : []).length, [alerts]);
   
   // Helper function to find a machine by ID
   const getMachineById = (id) => machines.find(m => m.id === id || m._id === id);

@@ -121,10 +121,22 @@ npm run dev
 ### Vercel (Frontend)
 
 1. Import repository in Vercel.
-2. Set root directory to `frontend`.
-3. Set environment variable:
+2. Set root directory to repository root (`.`), not `frontend`.
+3. Keep `vercel.json` at the repo root so rewrites and output directory are applied.
+4. Build command (if manually set in Vercel):
+   - `npm --prefix frontend run build`
+5. Install command (if manually set in Vercel):
+   - `npm --prefix frontend ci --no-audit --no-fund`
+6. Output directory:
+   - `frontend/dist`
+7. Set environment variable:
    - `VITE_API_URL=https://your-render-backend-url/api`
-4. Deploy.
+8. Deploy.
+
+If your Vercel project root is set to `frontend`, use these instead:
+- Build command: `npm install && npm run build`
+- Output directory: `dist`
+- Rewrites are already defined in `frontend/vercel.json`.
 
 ### Render (Backend)
 

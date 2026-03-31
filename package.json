@@ -4,7 +4,7 @@
   "description": "Express + MongoDB backend for Carter CRM",
   "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js",
+"start":"node server.js",
     "dev": "node start-all.js",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
