@@ -5,16 +5,16 @@
 @tailwind utilities;
 
 :root {
-  --bg: radial-gradient(circle at 12% 8%, #183a75 0%, #0a1731 46%, #071121 100%);
-  --panel: rgba(10, 22, 45, 0.84);
-  --panel-border: rgba(125, 168, 221, 0.24);
-  --text: #dbe8ff;
-  --muted: #97afcb;
-  --brand: #6cc4ff;
-  --sidebar-bg: linear-gradient(180deg, rgba(8, 20, 44, 0.94) 0%, rgba(7, 18, 40, 0.92) 100%);
-  --sidebar-border: rgba(125, 168, 221, 0.18);
-  --topbar-bg: rgba(9, 24, 50, 0.76);
-  --ring: rgba(108, 196, 255, 0.35);
+  --bg: radial-gradient(circle at 8% 10%, #f7fbff 0%, #edf4ff 42%, #e7efff 100%);
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-border: rgba(96, 126, 173, 0.24);
+  --text: #0f172a;
+  --muted: #334155;
+  --brand: #1d4ed8;
+  --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(241, 245, 255, 0.96) 100%);
+  --sidebar-border: rgba(100, 126, 167, 0.24);
+  --topbar-bg: rgba(255, 255, 255, 0.9);
+  --ring: rgba(29, 78, 216, 0.28);
 }
 
 html.dark {

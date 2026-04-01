@@ -71,7 +71,9 @@ const AppLayout = () => {
                 className={({ isActive }) =>
                   `saas-nav-link flex items-center gap-3 p-3 rounded-xl transition-all group ${
                     isActive
-                      ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/40 text-white shadow-lg"
+                      ? darkMode
+                        ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/40 text-white shadow-lg"
+                        : "bg-gradient-to-r from-blue-200/70 to-cyan-100/70 border border-blue-300/70 text-slate-900 shadow-sm"
                       : darkMode
                         ? "text-slate-400 hover:text-white hover:bg-slate-800/50 border-transparent"
                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 border-transparent"
@@ -106,11 +108,11 @@ const AppLayout = () => {
             >
               <Menu size={18} />
             </button>
-            {!sidebarCollapsed && (
+            className={`saas-sidebar-close p-1 rounded-lg transition-colors ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-200'}`} 
               <button
                 className="p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all hidden md:flex items-center justify-center w-10 h-10"
                 onClick={() => setSidebarCollapsed(true)}
-                aria-label="Collapse sidebar"
+            <ChevronLeftIcon className={`h-5 w-5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`} />
               >
                 <ChevronLeftIcon size={18} />
               </button>
