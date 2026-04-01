@@ -160,12 +160,20 @@ const normalizeError = (error) => {
   const path = error?.config?.url || "unknown-endpoint";
   const message = payload?.message || payload?.error || error?.message || "Request failed";
 
-  // Centralized client-side API error logging for easier production debugging.
-  console.error("API request failed", {
-    status,
-    path,
-    message,
-  });
+  // Avoid noisy error spam for optional endpoints missing in some deployments.
+  if (status === 404) {
+    console.warn("API endpoint not found", {
+      status,
+      path,
+      message,
+    });
+  } else {
+    console.error("API request failed", {
+      status,
+      path,
+      message,
+    });
+  }
 
   return {
     success: false,
@@ -177,6 +185,16 @@ const normalizeError = (error) => {
 };
 
 const isNotFoundError = (error) => Number(error?.response?.status || 0) === 404;
+
+const emptySuccess = (data = [], message = "Endpoint unavailable in this deployment") => ({
+  success: true,
+  data,
+  message,
+  error: "",
+  errors: undefined,
+  summary: undefined,
+  pagination: undefined,
+});
 
 const unwrapArray = (value, fallbackKeys = []) => {
   if (Array.isArray(value)) return value;
@@ -284,6 +302,9 @@ export const getMachinesByStore = async (storeId) => {
         data: unwrapArray(normalized.data, ["machines"]),
       };
     } catch (error) {
+      if (isNotFoundError(firstError) || isNotFoundError(error)) {
+        return emptySuccess([], "Machines endpoint unavailable, showing empty list");
+      }
       return normalizeError(error || firstError);
     }
   }
@@ -320,6 +341,9 @@ export const getSpareParts = async (params = {}) => {
       data: unwrapArray(normalized.data, ["spareParts", "inventory"]),
     };
   } catch (error) {
+    if (isNotFoundError(error)) {
+      return emptySuccess([], "Spare parts endpoint unavailable, showing empty inventory");
+    }
     return normalizeError(error);
   }
 };
@@ -367,21 +391,11 @@ export const getAlerts = async () => {
       ...normalized,
       data: unwrapArray(normalized.data, ["alerts"]),
     };
-  } catch (firstError) {
-    if (!isNotFoundError(firstError)) {
-      return normalizeError(firstError);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return emptySuccess([], "Alerts endpoint unavailable, showing no alerts");
     }
-
-    try {
-      const fallback = await api.get("/inventory/alerts");
-      const normalized = normalizeResult(fallback);
-      return {
-        ...normalized,
-        data: unwrapArray(normalized.data, ["alerts"]),
-      };
-    } catch (error) {
-      return normalizeError(error || firstError);
-    }
+    return normalizeError(error);
   }
 };
 
@@ -466,6 +480,9 @@ export const getPurchaseOrders = async (params = {}) => {
       data: unwrapArray(normalized.data, ["purchaseOrders", "orders"]),
     };
   } catch (error) {
+    if (isNotFoundError(error)) {
+      return emptySuccess([], "Purchase orders endpoint unavailable, showing empty list");
+    }
     return normalizeError(error);
   }
 };
@@ -502,6 +519,9 @@ export const getTransfers = async (params = {}) => {
       pagination: normalized.pagination,
     };
   } catch (error) {
+    if (isNotFoundError(error)) {
+      return emptySuccess([], "Transfers endpoint unavailable, showing empty list");
+    }
     return normalizeError(error);
   }
 };
@@ -515,6 +535,9 @@ export const getTransferStats = async (params = {}) => {
     const response = await api.get("/transfers/stats", { params });
     return normalizeResult(response);
   } catch (error) {
+    if (isNotFoundError(error)) {
+      return emptySuccess({ inTransit: 0, received: 0, delayed: 0 }, "Transfer stats unavailable");
+    }
     return normalizeError(error);
   }
 };
