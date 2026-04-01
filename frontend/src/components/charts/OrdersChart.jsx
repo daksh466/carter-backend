@@ -10,10 +10,10 @@ import {
 } from "recharts";
 
 const tooltipStyle = {
-  backgroundColor: "#0f172a",
-  border: "1px solid #334155",
+  backgroundColor: "var(--panel)",
+  border: "1px solid var(--panel-border)",
   borderRadius: 8,
-  color: "#e2e8f0",
+  color: "var(--text)",
 };
 
 const OrdersChart = ({ orders = [] }) => {
@@ -57,14 +57,18 @@ const OrdersChart = ({ orders = [] }) => {
   }, [orders]);
 
   return (
-    <div ref={frameRef} style={{ width: "100%", minHeight: 300, height: 300, minWidth: 1 }}>
+    <div
+      ref={frameRef}
+      className="w-full rounded-xl border border-gray-200 bg-white p-2 transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800"
+      style={{ minHeight: 300, height: 300, minWidth: 1 }}
+    >
       {canRender ? (
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={300}>
         <BarChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="name" tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={{ stroke: "#475569" }} />
-          <YAxis tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={{ stroke: "#475569" }} />
-          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#93c5fd" }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--panel-border)" />
+          <XAxis dataKey="name" tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={{ stroke: "var(--panel-border)" }} />
+          <YAxis tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={{ stroke: "var(--panel-border)" }} />
+          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "var(--brand)" }} />
           <Bar dataKey="value" fill="#60a5fa" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

@@ -15,10 +15,10 @@ const COLORS = {
 };
 
 const tooltipStyle = {
-  backgroundColor: "#0f172a",
-  border: "1px solid #334155",
+  backgroundColor: "var(--panel)",
+  border: "1px solid var(--panel-border)",
   borderRadius: 8,
-  color: "#e2e8f0",
+  color: "var(--text)",
 };
 
 const normalizeStatus = (status = "") => {
@@ -68,7 +68,11 @@ const MachinesChart = ({ machines = [] }) => {
   }, [machines]);
 
   return (
-    <div ref={frameRef} style={{ width: "100%", minHeight: 300, height: 300, minWidth: 1 }}>
+    <div
+      ref={frameRef}
+      className="w-full rounded-xl border border-gray-200 bg-white p-2 transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800"
+      style={{ minHeight: 300, height: 300, minWidth: 1 }}
+    >
       {canRender ? (
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={300}>
         <PieChart>
@@ -85,8 +89,8 @@ const MachinesChart = ({ machines = [] }) => {
               <Cell key={entry.name} fill={COLORS[entry.name]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#93c5fd" }} />
-          <Legend wrapperStyle={{ color: "#cbd5e1", fontSize: 12 }} />
+          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "var(--brand)" }} />
+          <Legend wrapperStyle={{ color: "var(--muted)", fontSize: 12 }} />
         </PieChart>
       </ResponsiveContainer>
       ) : null}

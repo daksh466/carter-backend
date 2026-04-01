@@ -13,6 +13,9 @@
   --brand: #1d4ed8;
   --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(241, 245, 255, 0.96) 100%);
   --sidebar-border: rgba(100, 126, 167, 0.24);
+  --sidebar-brand-text: #0f172a;
+  --sidebar-text: #334155;
+  --sidebar-text-active: #0f172a;
   --topbar-bg: rgba(255, 255, 255, 0.9);
   --ring: rgba(29, 78, 216, 0.28);
 }
@@ -26,6 +29,9 @@ html.dark {
   --brand: #8fd7ff;
   --sidebar-bg: linear-gradient(180deg, rgba(4, 12, 28, 0.96) 0%, rgba(3, 10, 24, 0.94) 100%);
   --sidebar-border: rgba(90, 124, 170, 0.34);
+  --sidebar-brand-text: #e2efff;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-active: #e6f5ff;
   --topbar-bg: rgba(7, 19, 40, 0.86);
   --ring: rgba(143, 215, 255, 0.4);
 }
@@ -125,7 +131,7 @@ a {
 }
 
 .saas-brand {
-  color: #e2efff;
+  color: var(--sidebar-brand-text);
   letter-spacing: 0.04em;
   font-family: "Space Grotesk", "Manrope", sans-serif;
   font-size: 20px;
@@ -143,7 +149,7 @@ a {
   gap: 10px;
   border-radius: 12px;
   padding: 9px 11px;
-  color: #cbd5e1;
+  color: var(--sidebar-text);
   border: 1px solid transparent;
   font-size: 14px;
   transition: all 0.18s ease;
@@ -152,13 +158,14 @@ a {
 .saas-nav-link:hover {
   background: linear-gradient(135deg, rgba(18, 44, 81, 0.8) 0%, rgba(18, 55, 96, 0.62) 100%);
   border-color: rgba(127, 169, 221, 0.38);
+  color: var(--sidebar-text-active);
   transform: translateX(2px);
 }
 
 .saas-nav-link.active {
   background: linear-gradient(135deg, rgba(23, 94, 173, 0.38) 0%, rgba(24, 77, 156, 0.3) 100%);
   border-color: rgba(107, 198, 255, 0.58);
-  color: #e6f5ff;
+  color: var(--sidebar-text-active);
   box-shadow: 0 10px 20px rgba(3, 16, 42, 0.33);
 }
 

@@ -72,155 +72,72 @@ const Orders = () => {
 
   if (ordersLoading) {
     return (
-      <div
-        style={{
-          width: "100%",
-          minHeight: "calc(100vh - 64px)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "32px 24px",
-        }}
-      >
-        <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
-        <h2 style={{ color: "#fff", fontSize: 24, marginBottom: 8 }}>Loading Orders...</h2>
-        <p style={{ color: "#aaa", fontSize: 14 }}>Fetching order data...</p>
+      <div className="flex min-h-[calc(100vh-64px)] w-full flex-col items-center justify-center px-6 py-8 transition-colors duration-300">
+        <div className="mb-4 text-5xl">⏳</div>
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Loading Orders...</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Fetching order data...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ width: "100%", minHeight: "calc(100vh - 64px)", padding: "32px 24px" }}>
-      <div style={{ marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+    <div className="min-h-[calc(100vh-64px)] w-full px-6 py-8 transition-colors duration-300">
+      <div className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap items-start justify-between gap-4">
         <div>
-          <h2
-            style={{
-              fontSize: 32,
-              fontWeight: 700,
-              marginBottom: 8,
-              color: "#fff",
-              letterSpacing: 1,
-              textShadow: "0 2px 12px #1e2a78cc",
-            }}
-          >
-            Orders
-          </h2>
-          <p style={{ color: "#aaa", fontSize: 14 }}>Manage all orders and track payment status</p>
+          <h2 className="mb-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Orders</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Manage all orders and track payment status</p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          style={{
-            padding: "10px 20px",
-            background: "#2563eb",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontSize: 14,
-            fontWeight: 600,
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = "#1d4ed8";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = "#2563eb";
-          }}
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-blue-700"
         >
           + Create Order
         </button>
       </div>
 
       {ordersError && (
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 1200,
-            margin: "0 auto 24px",
-            padding: 16,
-            background: "#fee2e2",
-            border: "1px solid #fca5a5",
-            borderRadius: 8,
-            color: "#991b1b",
-            textAlign: "center",
-          }}
-        >
+        <div className="mx-auto mb-6 w-full max-w-6xl rounded-lg border border-red-300 bg-red-50 p-4 text-center text-red-800 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
           <strong>⚠️ Warning:</strong> {ordersError}
         </div>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 16,
-          maxWidth: 1200,
-          margin: "0 auto 32px",
-        }}
-      >
-        <div style={{ padding: 20, background: "#1e2a78", borderRadius: 8, border: "1px solid #2a3a9f" }}>
-          <div style={{ fontSize: 12, color: "#aaa", marginBottom: 8 }}>Total Orders</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "#6ea8fe" }}>{safeNumber(ordersSummary?.total)}</div>
+      <div className="mx-auto mb-8 grid w-full max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-2 text-xs text-gray-600 dark:text-gray-400">Total Orders</div>
+          <div className="text-3xl font-bold text-blue-600 dark:text-blue-300">{safeNumber(ordersSummary?.total)}</div>
         </div>
-        <div style={{ padding: 20, background: "#1e2a78", borderRadius: 8, border: "1px solid #2a3a9f" }}>
-          <div style={{ fontSize: 12, color: "#aaa", marginBottom: 8 }}>Paid</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "#86efac" }}>{safeNumber(ordersSummary?.paid)}</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-2 text-xs text-gray-600 dark:text-gray-400">Paid</div>
+          <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-300">{safeNumber(ordersSummary?.paid)}</div>
         </div>
-        <div style={{ padding: 20, background: "#1e2a78", borderRadius: 8, border: "1px solid #2a3a9f" }}>
-          <div style={{ fontSize: 12, color: "#aaa", marginBottom: 8 }}>Pending</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "#fca5a5" }}>{safeNumber(ordersSummary?.pending)}</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-2 text-xs text-gray-600 dark:text-gray-400">Pending</div>
+          <div className="text-3xl font-bold text-rose-600 dark:text-rose-300">{safeNumber(ordersSummary?.pending)}</div>
         </div>
-        <div style={{ padding: 20, background: "#1e2a78", borderRadius: 8, border: "1px solid #2a3a9f" }}>
-          <div style={{ fontSize: 12, color: "#aaa", marginBottom: 8 }}>Total Amount</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "#fbbf24" }}>₹{formatAmount(ordersSummary?.totalAmount)}</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-2 text-xs text-gray-600 dark:text-gray-400">Total Amount</div>
+          <div className="text-3xl font-bold text-amber-600 dark:text-amber-300">₹{formatAmount(ordersSummary?.totalAmount)}</div>
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto 24px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 16,
-        }}
-      >
+      <div className="mx-auto mb-6 grid w-full max-w-6xl grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label style={{ display: "block", fontSize: 12, color: "#aaa", marginBottom: 6, fontWeight: 600 }}>Search by Customer</label>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">Search by Customer</label>
           <input
             type="text"
             placeholder="Search by customer"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              border: "1px solid #2a3a9f",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#fff",
-              fontSize: 14,
-              outline: "none",
-            }}
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
           />
         </div>
 
         <div>
-          <label style={{ display: "block", fontSize: 12, color: "#aaa", marginBottom: 6, fontWeight: 600 }}>Payment Status</label>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">Payment Status</label>
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              border: "1px solid #2a3a9f",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#fff",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
+            className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-colors duration-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
           >
             <option value="all">All Orders</option>
             <option value="Paid">Paid</option>
@@ -229,20 +146,11 @@ const Orders = () => {
         </div>
 
         <div>
-          <label style={{ display: "block", fontSize: 12, color: "#aaa", marginBottom: 6, fontWeight: 600 }}>Sort By</label>
+          <label className="mb-1.5 block text-xs font-semibold text-gray-700 dark:text-gray-300">Sort By</label>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              border: "1px solid #2a3a9f",
-              borderRadius: 6,
-              background: "#0f172a",
-              color: "#fff",
-              fontSize: 14,
-              cursor: "pointer",
-            }}
+            className="w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-colors duration-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
           >
             <option value="date-new">Newest First</option>
             <option value="date-old">Oldest First</option>
@@ -252,16 +160,16 @@ const Orders = () => {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div className="mx-auto w-full max-w-6xl">
         {filteredOrders.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48 }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-            <p style={{ color: "#888", fontSize: 18 }}>
+          <div className="rounded-xl border border-gray-200 bg-white p-12 text-center shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+            <div className="mb-4 text-5xl">📭</div>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               {searchTerm || paymentFilter !== "all" ? "No orders match your filters" : "No data found"}
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: 16 }}>
+          <div className="grid gap-4">
             {filteredOrders?.map((order, index) => {
               const orderId = getOrderId(order);
               const machines = Array.isArray(order?.machines) ? order.machines : [];
@@ -269,118 +177,61 @@ const Orders = () => {
               return (
                 <div
                   key={orderId || `order-${index}`}
-                  style={{
-                    background: "#1a2f60",
-                    border: "1px solid #2a3a9f",
-                    borderRadius: 8,
-                    padding: 20,
-                    transition: "all 0.2s",
-                    position: "relative",
-                  }}
+                  className="relative rounded-xl border border-gray-200 bg-white p-5 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800"
                 >
                   <button
                     onClick={() => handleDeleteOrder(orderId)}
                     disabled={!orderId || deletingOrderId === orderId}
-                    style={{
-                      position: "absolute",
-                      top: 12,
-                      right: 12,
-                      background: "#ef4444",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "6px 12px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: !orderId || deletingOrderId === orderId ? "not-allowed" : "pointer",
-                      opacity: !orderId || deletingOrderId === orderId ? 0.6 : 1,
-                    }}
+                    className="absolute right-3 top-3 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-300 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingOrderId === orderId ? "Deleting..." : "Delete"}
                   </button>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr auto",
-                      gap: 16,
-                      marginBottom: 16,
-                      paddingBottom: 16,
-                      borderBottom: "1px solid #2a3a9f",
-                    }}
-                  >
+                  <div className="mb-4 grid grid-cols-1 gap-4 border-b border-gray-200 pb-4 md:grid-cols-[1fr_auto] dark:border-gray-700">
                     <div>
-                      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 8 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#e0e7ff" }}>{orderId || "N/A"}</div>
-                        <div style={{ fontSize: 12, color: "#aaa" }}>{formatDate(order?.orderDate)}</div>
+                      <div className="mb-2 flex flex-wrap items-center gap-3">
+                        <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{orderId || "N/A"}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">{formatDate(order?.orderDate)}</div>
                       </div>
-                      <div style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>{order?.customerName || "Unknown Customer"}</div>
-                      <div style={{ fontSize: 12, color: "#aaa", marginTop: 4 }}>
+                      <div className="text-base font-semibold text-gray-900 dark:text-gray-100">{order?.customerName || "Unknown Customer"}</div>
+                      <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                         📧 {order?.customerEmail || "N/A"} • 📞 {order?.customerPhone || "N/A"}
                       </div>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 24, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>
+                    <div className="text-left md:text-right">
+                      <div className="mb-2 text-2xl font-bold text-amber-600 dark:text-amber-300">
                         ₹{formatAmount(order?.totalAmount)}
                       </div>
                       <div
-                        style={{
-                          display: "inline-block",
-                          padding: "6px 14px",
-                          borderRadius: 16,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          background: order?.paymentStatus === "Paid" ? "#dcfce7" : "#fee2e2",
-                          color: order?.paymentStatus === "Paid" ? "#166534" : "#991b1b",
-                        }}
+                        className={`inline-block rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+                          order?.paymentStatus === "Paid"
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                        }`}
                       >
                         {order?.paymentStatus === "Paid" ? "✓ Paid" : "⏳ Pending"}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#aaa", marginBottom: 8, textTransform: "uppercase" }}>
+                  <div className="mb-4">
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
                       Machines Ordered
                     </div>
-                    <div style={{ display: "grid", gap: 8 }}>
+                    <div className="grid gap-2">
                       {machines.length === 0 ? (
-                        <div
-                          style={{
-                            padding: "10px 12px",
-                            background: "#0f172a",
-                            borderRadius: 6,
-                            border: "1px solid #1e2a78",
-                            color: "#aaa",
-                            fontSize: 14,
-                          }}
-                        >
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
                           No machine data
                         </div>
                       ) : (
                         machines.map((machine, idx) => (
                           <div
                             key={`machine-${idx}`}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "10px 12px",
-                              background: "#0f172a",
-                              borderRadius: 6,
-                              border: "1px solid #1e2a78",
-                            }}
+                            className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900"
                           >
-                            <span style={{ color: "#e0e7ff", fontSize: 14 }}>{machine?.name || "Unnamed Machine"}</span>
+                            <span className="text-sm text-gray-800 dark:text-gray-200">{machine?.name || "Unnamed Machine"}</span>
                             <span
-                              style={{
-                                background: "#2a3a9f",
-                                color: "#6ea8fe",
-                                padding: "4px 10px",
-                                borderRadius: 4,
-                                fontSize: 12,
-                                fontWeight: 600,
-                              }}
+                              className="rounded-md bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200"
                             >
                               Qty: {safeNumber(machine?.quantity)}
                             </span>
@@ -390,7 +241,7 @@ const Orders = () => {
                     </div>
                   </div>
 
-                  <div style={{ fontSize: 12, color: "#aaa" }}>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     <strong>Verified By:</strong> {order?.verifiedBy || "N/A"}
                   </div>
                 </div>
@@ -401,15 +252,7 @@ const Orders = () => {
       </div>
 
       {filteredOrders.length > 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 32,
-            padding: 16,
-            color: "#aaa",
-            fontSize: 12,
-          }}
-        >
+        <div className="mt-8 text-center text-xs text-gray-600 dark:text-gray-400">
           Showing {filteredOrders.length} of {safeNumber(ordersSummary?.total)} orders
         </div>
       )}

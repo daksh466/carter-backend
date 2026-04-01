@@ -11,10 +11,10 @@ import {
 } from "recharts";
 
 const tooltipStyle = {
-  backgroundColor: "#0f172a",
-  border: "1px solid #334155",
+  backgroundColor: "var(--panel)",
+  border: "1px solid var(--panel-border)",
   borderRadius: 8,
-  color: "#e2e8f0",
+  color: "var(--text)",
 };
 
 const ShipmentChart = ({ data = [], height = 280 }) => {
@@ -40,14 +40,18 @@ const ShipmentChart = ({ data = [], height = 280 }) => {
   }, []);
 
   return (
-    <div ref={frameRef} style={{ width: "100%", height, minHeight: 250, minWidth: 1 }}>
+    <div
+      ref={frameRef}
+      className="w-full rounded-xl border border-gray-200 bg-white p-2 transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800"
+      style={{ height, minHeight: 300, minWidth: 1 }}
+    >
       {canRender ? (
-      <ResponsiveContainer width="100%" height={height} minWidth={1} minHeight={250}>
+      <ResponsiveContainer width="100%" height={height} minWidth={1} minHeight={300}>
         <LineChart data={data} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="label" tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={{ stroke: "#475569" }} />
-          <YAxis allowDecimals={false} tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={{ stroke: "#475569" }} />
-          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#93c5fd" }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--panel-border)" />
+          <XAxis dataKey="label" tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={{ stroke: "var(--panel-border)" }} />
+          <YAxis allowDecimals={false} tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={{ stroke: "var(--panel-border)" }} />
+          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "var(--brand)" }} />
           <Legend />
           <Line 
             type="monotone" 

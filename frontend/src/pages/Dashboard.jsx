@@ -45,23 +45,23 @@ const ProgressBar = ({ value = 0, max = 100, color = "emerald", label }) => {
   };
   return (
     <div className="flex items-center gap-2">
-      {label && <span className="text-xs font-medium text-slate-400 w-16">{label}</span>}
-      <div className="flex-1 bg-slate-800/50 rounded-full h-2">
+      {label && <span className="w-16 text-xs font-medium text-gray-600 dark:text-slate-400">{label}</span>}
+      <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-slate-800/50">
         <div 
           className={`h-2 rounded-full transition-all duration-500 ${colors[color] || colors.emerald}`} 
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="text-xs font-bold text-slate-300 w-12 text-right">{value}/{max}</span>
+      <span className="w-12 text-right text-xs font-bold text-gray-700 dark:text-slate-300">{value}/{max}</span>
     </div>
   );
 };
 
 // Premium Card Wrapper
 const PremiumCard = ({ title, children, className = "", action }) => (
-  <div className="bg-gradient-to-b from-slate-800/95 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl hover:shadow-3xl hover:border-blue-500/30 transition-all duration-300">
-    <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
-      <h3 className="text-lg font-black bg-gradient-to-r from-slate-200 to-slate-100 bg-clip-text">{title}</h3>
+  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md backdrop-blur-xl transition-all duration-300 hover:border-blue-400/40 dark:border-slate-700/50 dark:bg-gradient-to-b dark:from-slate-800/95 dark:to-slate-900/90 dark:shadow-2xl">
+    <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4 dark:border-slate-700/50">
+      <h3 className="bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-lg font-black text-transparent dark:from-slate-200 dark:to-slate-100">{title}</h3>
       {action}
     </div>
     <div className={className}>{children}</div>
@@ -190,20 +190,20 @@ const Dashboard = () => {
   }, [orders]);
 
   const chartTooltipStyle = {
-    background: "rgba(15, 23, 42, 0.98)",
-    border: "1px solid rgba(59, 130, 246, 0.3)",
+    background: "var(--panel)",
+    border: "1px solid var(--panel-border)",
     borderRadius: 12,
-    color: "#e2e8f0",
+    color: "var(--text)",
     fontSize: 13,
     padding: "12px 16px",
   };
 
   if (loading || storeLoading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 to-slate-900">
+      <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 transition-colors duration-300 dark:from-slate-950 dark:to-slate-900">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-2xl border-4 border-cyan-500/30 border-t-cyan-500 mx-auto mb-4" />
-          <p className="text-slate-400 text-lg">Loading Dashboard Intelligence...</p>
+          <p className="text-lg text-gray-700 dark:text-slate-400">Loading Dashboard Intelligence...</p>
         </div>
       </div>
     );
@@ -215,21 +215,21 @@ const Dashboard = () => {
         
         {/* PHASE 2: TOP KPI GRID */}
         <div className="col-span-full grid grid-cols-12 gap-4">
-          <div className="col-span-3 bg-slate-800 p-4 rounded-xl">
-            <p className="text-sm text-gray-400">Total Stores</p>
-            <h2 className="text-2xl font-bold">{stores.length.toLocaleString()}</h2>
+          <div className="col-span-3 rounded-xl border border-gray-200 bg-white p-4 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Total Stores</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stores.length.toLocaleString()}</h2>
           </div>
-          <div className="col-span-3 bg-slate-800 p-4 rounded-xl">
-            <p className="text-sm text-gray-400">Machines</p>
-            <h2 className="text-2xl font-bold">{machines.length.toLocaleString()}</h2>
+          <div className="col-span-3 rounded-xl border border-gray-200 bg-white p-4 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Machines</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{machines.length.toLocaleString()}</h2>
           </div>
-          <div className="col-span-3 bg-slate-800 p-4 rounded-xl">
-            <p className="text-sm text-gray-400">Inventory Value</p>
-            <h2 className="text-2xl font-bold">${(totalInventoryValue / 1000).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}K</h2>
+          <div className="col-span-3 rounded-xl border border-gray-200 bg-white p-4 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Inventory Value</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">${(totalInventoryValue / 1000).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}K</h2>
           </div>
-          <div className="col-span-3 bg-slate-800 p-4 rounded-xl">
-            <p className="text-sm text-gray-400">Critical Spares</p>
-            <h2 className="text-2xl font-bold">{criticalSpares}</h2>
+          <div className="col-span-3 rounded-xl border border-gray-200 bg-white p-4 shadow-md transition-colors duration-300 dark:border-gray-700 dark:bg-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Critical Spares</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{criticalSpares}</h2>
           </div>
         </div>
 
@@ -242,11 +242,11 @@ const Dashboard = () => {
           <PremiumCard title="Inventory Intelligence">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               <div>
-                <h4 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wide">Top Demand Spares</h4>
+                <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">Top Demand Spares</h4>
                 <div className="space-y-3">
                   {topSparesDemand.slice(0,6).map((item, i) => (
-                    <div key={i} className="group flex items-center justify-between p-3 bg-slate-800/50 rounded-xl hover:bg-slate-800/80 transition-all">
-                      <span className="text-sm font-semibold text-slate-200 min-w-0 truncate">{item.name}</span>
+                    <div key={i} className="group flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3 transition-all hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800/80">
+                      <span className="min-w-0 truncate text-sm font-semibold text-gray-800 dark:text-slate-200">{item.name}</span>
                       <div className="flex items-center gap-3">
                         <ProgressBar value={item.value} max={50} color="blue" />
                       </div>
@@ -256,21 +256,21 @@ const Dashboard = () => {
               </div>
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div ref={usageChartRef} className="h-[220px]" style={{ minWidth: 1, minHeight: 220 }}>
+                  <div ref={usageChartRef} className="h-[220px] rounded-xl border border-gray-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900/40" style={{ minWidth: 1, minHeight: 220 }}>
                     {canRenderUsageChart ? (
                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={220}>
                       <AreaChart data={usageTrends}>
                         <defs><linearGradient id="usageGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4}/><stop offset="100%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
-                        <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.1)" />
-                        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{fontSize:11, fill:'#94a3b8'}} />
-                        <YAxis tickLine={false} axisLine={false} tick={{fontSize:11, fill:'#94a3b8'}} />
+                        <CartesianGrid vertical={false} stroke="var(--panel-border)" />
+                        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{fontSize:11, fill:'var(--muted)'}} />
+                        <YAxis tickLine={false} axisLine={false} tick={{fontSize:11, fill:'var(--muted)'}} />
                         <Tooltip contentStyle={chartTooltipStyle} />
                         <Area type="monotone" dataKey="usage" stroke="#3b82f6" strokeWidth={3} fill="url(#usageGrad)" />
                       </AreaChart>
                     </ResponsiveContainer>
                     ) : null}
                   </div>
-                  <div ref={distributionChartRef} className="h-[220px]" style={{ minWidth: 1, minHeight: 220 }}>
+                  <div ref={distributionChartRef} className="h-[220px] rounded-xl border border-gray-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900/40" style={{ minWidth: 1, minHeight: 220 }}>
                     {canRenderDistributionChart ? (
                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={220}>
                       <RePieChart>
@@ -322,8 +322,8 @@ const Dashboard = () => {
               <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-red-500/10 to-red-600/5 border border-red-500/30 rounded-xl">
                 <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-200">Critical Stock Alerts</p>
-                  <p className="text-sm text-slate-400">{lowStockSpareParts.length + lowStockMachines.length} items below threshold</p>
+                  <p className="font-bold text-gray-900 dark:text-slate-200">Critical Stock Alerts</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">{lowStockSpareParts.length + lowStockMachines.length} items below threshold</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -343,13 +343,13 @@ const Dashboard = () => {
           <PremiumCard title="Recent Activity">
             <div className="space-y-3 max-h-[400px] overflow-y-auto">
               {recentTransfers.map((transfer, i) => (
-                <div key={i} className="group flex items-center gap-3 p-4 bg-slate-800/50 hover:bg-slate-800/80 rounded-xl transition-all border border-slate-700/50 hover:border-slate-600/50">
+                <div key={i} className="group flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-gray-300 hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:border-slate-600/50 dark:hover:bg-slate-800/80">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-sky-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <ArrowUpRight className="h-5 w-5 text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-200 truncate">{transfer.transferCode ?? `Transfer #${i+1}`}</p>
-                    <p className="text-sm text-slate-500 truncate">{transfer.fromStoreName || '-'} → {transfer.toStoreName || '-'}</p>
+                    <p className="truncate font-semibold text-gray-900 dark:text-slate-200">{transfer.transferCode ?? `Transfer #${i+1}`}</p>
+                    <p className="truncate text-sm text-gray-600 dark:text-slate-500">{transfer.fromStoreName || '-'} → {transfer.toStoreName || '-'}</p>
                   </div>
                   <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-full whitespace-nowrap">
                     {transfer.status ?? 'Pending'}
@@ -366,11 +366,11 @@ const Dashboard = () => {
           <PremiumCard title="Critical Items">
             <div className="space-y-4">
               <div>
-                <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Low Stock Spares</h5>
+                <h5 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-slate-400">Low Stock Spares</h5>
                 {lowStockSpareParts.slice(0,3).map((part, i) => (
                   <div key={i} className="mb-3 last:mb-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-slate-300 truncate max-w-[140px]">{part.name}</span>
+                      <span className="max-w-[140px] truncate text-sm font-semibold text-gray-800 dark:text-slate-300">{part.name}</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${part.priority === 'critical' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
                         Critical
                       </span>
